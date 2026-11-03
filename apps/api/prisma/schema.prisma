@@ -1,0 +1,50 @@
+// POSHA Prisma schema — Stage 1 minimal.
+// Expand per docs/spec/10_SIMPLE_APP_SCOPE.md as we build stages.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AgeLevel {
+  L0
+  G1
+  L2
+  L3
+}
+
+enum Role {
+  guest
+  member
+  creator
+  moderator
+  admin
+}
+
+model User {
+  id        String   @id @default(uuid())
+  alias     String   @unique
+  role      Role     @default(member)
+  ageLevel  AgeLevel @default(L0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+}
+
+model GuestSession {
+  id          String   @id @default(uuid())
+  userId      String
+  alias       String
+  ipHash      String?
+  uaHash      String?
+  declaredAt  DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}

@@ -1,0 +1,29 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+.expo/
+.expo-shared/
+.turbo/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# test
+coverage/

@@ -1,0 +1,18 @@
+{
+  "name": "posha",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @posha/api dev",
+    "dev:mobile": "pnpm --filter @posha/mobile dev",
+    "dev:admin": "pnpm --filter @posha/admin dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  }
+}

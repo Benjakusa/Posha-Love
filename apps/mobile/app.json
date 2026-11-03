@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "POSHA",
+    "slug": "posha",
+    "scheme": "posha",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "cloud.posha.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "POSHA uses your camera for video chat with strangers. You are always in control — video only starts after you tap to enable it.",
+        "NSMicrophoneUsageDescription": "POSHA uses your microphone for video chat with strangers. You can mute anytime."
+      }
+    },
+    "android": {
+      "package": "cloud.posha.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_CONNECT"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "@livekit/react-native-expo-plugin",
+      "@config-plugins/react-native-webrtc"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@posha/shared": ["../../packages/shared/src"],
+      "@posha/config": ["../../packages/config/src"]
+    }
+  }
+}
