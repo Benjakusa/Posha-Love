@@ -10,8 +10,10 @@ export const GuestSessionResponse = z.object({
   token: z.string(),
   expiresAt: z.string(), // ISO
   alias: z.string(),
-  ageLevel: z.literal(AgeLevel.G1),
-  role: z.literal(Role.Guest),
+  ageLevel: z.string(), // G1 (guest) | L2 (member/creator)
+  role: z.string(),     // guest | member | creator
+  isNewUser: z.boolean().optional(),
+  creatorStatus: z.enum(['approved', 'pending', 'rejected', 'none']).optional(),
 });
 export type GuestSessionResponse = z.infer<typeof GuestSessionResponse>;
 

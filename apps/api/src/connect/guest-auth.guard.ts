@@ -19,7 +19,12 @@ export class GuestAuthGuard implements CanActivate {
     if (!token) throw new UnauthorizedException({ code: 'UNAUTHENTICATED' });
     try {
       const payload = await this.jwt.verifyAsync<JwtPayload>(token);
-      req.user = { userId: payload.sub, alias: payload.alias };
+      req.user = {
+        userId: payload.sub,
+        alias: payload.alias,
+        role: payload.role,
+        ageLevel: payload.ageLevel,
+      };
       return true;
     } catch {
       throw new UnauthorizedException({ code: 'UNAUTHENTICATED' });

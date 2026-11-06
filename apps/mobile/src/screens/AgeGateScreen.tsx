@@ -5,25 +5,24 @@ import { Screen } from '../components/Screen';
 import { Button } from '../components/Button';
 import { Icon } from '../icons';
 
-type Props = { onEnter: () => Promise<void> };
+type Props = {
+  onGuest: () => Promise<void>;
+  onSignIn: () => void;
+  onSignInCreator: () => void;
+};
 
-export function AgeGateScreen({ onEnter }: Props) {
+export function AgeGateScreen({ onGuest, onSignIn, onSignInCreator }: Props) {
   const { theme } = useTheme();
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function enter() {
+  async function enterGuest() {
     if (!confirmed || loading) return;
-    setLoading(true);
-    setError(null);
-    try {
-      await onEnter();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not start session');
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true); setError(null);
+    try { await onGuest(); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Could not start session'); }
+    finally { setLoading(false); }
   }
 
   return (
@@ -43,29 +42,22 @@ export function AgeGateScreen({ onEnter }: Props) {
           </Text>
         </View>
 
-        <View style={{ gap: 16 }}>
+        <View style={{ gap: 12 }}>
           <Pressable
             onPress={() => setConfirmed((c) => !c)}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: confirmed }}
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 16,
+              flexDirection: 'row', alignItems: 'center', gap: 16,
               paddingVertical: 16,
-              borderTopWidth: 2,
-              borderBottomWidth: 2,
-              borderColor: theme.colors.border,
+              borderTopWidth: 2, borderBottomWidth: 2, borderColor: theme.colors.border,
             }}
           >
-            <View
-              style={{
-                width: 28, height: 28,
-                borderWidth: 2, borderColor: theme.colors.border,
-                backgroundColor: confirmed ? theme.colors.primary : 'transparent',
-                alignItems: 'center', justifyContent: 'center',
-              }}
-            >
+            <View style={{
+              width: 28, height: 28, borderWidth: 2, borderColor: theme.colors.border,
+              backgroundColor: confirmed ? theme.colors.primary : 'transparent',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
               {confirmed ? <Icon.Check size={16} color={theme.colors.onPrimary} /> : null}
             </View>
             <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.md, fontWeight: '600', flex: 1 }}>
@@ -73,21 +65,40 @@ export function AgeGateScreen({ onEnter }: Props) {
             </Text>
           </Pressable>
 
-          {error ? (
-            <Text style={{ color: theme.colors.danger, fontSize: theme.fontSizes.sm }}>{error}</Text>
-          ) : null}
+          {error ? <Text style={{ color: theme.colors.danger, fontSize: 13 }}>{error}</Text> : null}
 
           <Button
-            label={loading ? '' : 'Enter as guest'}
-            onPress={enter}
-            disabled={!confirmed}
+            label={loading ? '' : 'Continue as guest'}
+            onPress={enterGuest}
+            disabled={!confirmed || loading}
             loading={loading}
           />
 
+          <Pressable
+            onPress={onSignIn}
+            disabled={!confirmed}
+            style={{
+              paddingVertical: 14, borderRadius: 999, alignItems: 'center',
+              borderWidth: 2, borderColor: theme.colors.border, opacity: confirmed ? 1 : 0.4,
+            }}
+          >
+            <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>Sign in</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={onSignInCreator}
+            disabled={!confirmed}
+            style={{
+              paddingVertical: 14, borderRadius: 999, alignItems: 'center',
+              borderWidth: 2, borderColor: theme.colors.primary, opacity: confirmed ? 1 : 0.4,
+            }}
+          >
+            <Text style={{ color: theme.colors.primary, fontSize: 15, fontWeight: '800' }}>Sign in as creator</Text>
+          </Pressable>
+
           <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.xs }}>
             By entering you agree to the{' '}
-            <Text style={{ color: theme.colors.link, textDecorationLine: 'underline' }}>Terms</Text>
-            . Adults only. Non-explicit.
+            <Text style={{ color: theme.colors.link, textDecorationLine: 'underline' }}>Terms</Text>.
           </Text>
         </View>
       </View>

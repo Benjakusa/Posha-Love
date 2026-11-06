@@ -7,9 +7,15 @@ import {
   ImageBackground,
   useWindowDimensions,
 } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import { useTheme } from '../theme/ThemeProvider';
 import { Icon } from '../icons';
+import { BottomNav, NavRoute } from '../components/BottomNav';
+import { LivesCarousel } from '../components/LivesCarousel';
+import { HOME_GRID_VIDEOS } from '../catalog';
+import { listMySubscriptions } from '../api';
 
 const HERO_IMAGES = [
   'https://images.pexels.com/photos/39569841/pexels-photo-39569841.jpeg?w=1400',
@@ -26,20 +32,19 @@ const HERO_COPY = [
 ];
 
 type Props = {
+  token: string;
   onChat: () => void;
   onVideo: () => void;
-  onProfile: () => void;
-  onSettings: () => void;
-  onExplore: () => void;
-  onHome: () => void;
+  onNavigate: (route: NavRoute) => void;
 };
 
-export function HomeScreen({ onChat, onVideo, onProfile, onSettings, onExplore, onHome }: Props) {
+export function HomeScreen({ token, onChat, onVideo, onNavigate }: Props) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const heroHeight = Math.min(560, Math.round(height * 0.55));
   const [idx, setIdx] = useState(0);
+  const [subs, setSubs] = useState<Set<string>>(new Set());
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -47,17 +52,13 @@ export function HomeScreen({ onChat, onVideo, onProfile, onSettings, onExplore, 
     return () => { if (timer.current) clearInterval(timer.current); };
   }, []);
 
-  const lives = [
-    { id: 'l1', title: 'Friday vibes', creator: '@amara', in: 'in 2h' },
-    { id: 'l2', title: 'Q&A hour', creator: '@juma', in: 'in 5h' },
-    { id: 'l3', title: 'Late talk', creator: '@nia', in: 'tomorrow' },
-  ];
-  const videos = [
-    { id: 'v1', title: 'Late night talk', creator: '@amara', price: 'KSh 200' },
-    { id: 'v2', title: 'Coffee & questions', creator: '@juma', price: 'KSh 150' },
-    { id: 'v3', title: 'Sunday thoughts', creator: '@nia', price: 'KSh 300' },
-    { id: 'v4', title: 'Street sounds', creator: '@kev', price: 'KSh 100' },
-  ];
+  useEffect(() => {
+    listMySubscriptions(token)
+      .then((list) =>
+        setSubs(new Set(list.filter((s) => s.status === 'active').map((s) => s.creatorAlias))),
+      )
+      .catch(() => {});
+  }, [token]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -81,8 +82,8 @@ export function HomeScreen({ onChat, onVideo, onProfile, onSettings, onExplore, 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '800' }}>👋 Guest</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.primary, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>
-                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFFFFF' }} />
-                <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }}>LIVE</Text>
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: theme.colors.onPrimary }} />
+                <Text style={{ color: theme.colors.onPrimary, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }}>LIVE</Text>
               </View>
             </View>
             <View style={{ gap: 12 }}>
@@ -128,9 +129,9 @@ export function HomeScreen({ onChat, onVideo, onProfile, onSettings, onExplore, 
             accessibilityRole="button"
             style={({ pressed }) => ({
               opacity: pressed ? 0.9 : 1,
-              backgroundColor: theme.colors.surface,
+              backgroundColor: '#FF0000',
               borderWidth: 2,
-              borderColor: pressed ? theme.colors.primary : theme.colors.border,
+              borderColor: '#FF0000',
               borderRadius: theme.radii.lg,
               padding: 20,
               flexDirection: 'row',
@@ -139,110 +140,77 @@ export function HomeScreen({ onChat, onVideo, onProfile, onSettings, onExplore, 
             })}
           >
             <View style={{ gap: 4, flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.lg, fontWeight: '800' }}>
+              <Text style={{ color: '#FFFFFF', fontSize: theme.fontSizes.lg, fontWeight: '800' }}>
                 Video chat with strangers
               </Text>
-              <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.sm }}>
+              <Text style={{ color: '#FFFFFF', fontSize: theme.fontSizes.sm }}>
                 Guests: 2 min. Subscribers: longer.
               </Text>
             </View>
-            <Icon.Video size={32} color={theme.colors.primary} />
+            <Icon.Video size={32} color="#FFFFFF" />
           </Pressable>
 
-          {/* LIVES SOON */}
-          <View style={{ gap: 12 }}>
-            <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.lg, fontWeight: '800' }}>Lives soon</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-              {lives.map((l) => (
-                <View
-                  key={l.id}
-                  style={{
-                    width: 220,
-                    backgroundColor: theme.colors.surface,
-                    borderWidth: 2,
-                    borderColor: theme.colors.border,
-                    borderLeftWidth: 4,
-                    borderLeftColor: theme.colors.primary,
-                    borderRadius: theme.radii.lg,
-                    padding: 16,
-                    gap: 8,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: theme.colors.primary }} />
-                    <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }}>LIVE</Text>
-                  </View>
-                  <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.md, fontWeight: '800' }}>{l.title}</Text>
-                  <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.sm }}>{l.creator}</Text>
-                  <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.xs }}>{l.in}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
+          {/* LIVES CAROUSEL */}
+          <LivesCarousel subs={subs} />
 
           {/* VIDEOS */}
           <View style={{ gap: 12 }}>
             <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.lg, fontWeight: '800' }}>Videos</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-              {videos.map((v) => (
-                <View key={v.id} style={{ width: '48%', gap: 8 }}>
-                  <View
+              {HOME_GRID_VIDEOS.map((v) => {
+                const locked = !subs.has(v.creator);
+                return (
+                  <Pressable
+                    key={v.id}
                     style={{
-                      aspectRatio: 1,
-                      backgroundColor: theme.colors.lockedTile,
+                      width: '48%',
                       borderRadius: theme.radii.md,
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      borderWidth: 2,
+                      borderColor: theme.colors.border,
+                      aspectRatio: 0.75,
                     }}
                   >
-                    <Icon.Lock size={28} color={theme.colors.primary} />
-                  </View>
-                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: theme.fontSizes.sm, fontWeight: '700' }}>
-                    {v.title}
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.xs }}>{v.creator}</Text>
-                    <View style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 }}>
-                      <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>{v.price}</Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
+                    <ImageBackground
+                      source={{ uri: v.image }}
+                      style={{ flex: 1, justifyContent: 'flex-end' }}
+                      imageStyle={{ backgroundColor: theme.colors.lockedTile }}
+                    >
+                      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
+                      {locked ? <BlurView intensity={90} tint="light" style={StyleSheet.absoluteFill} /> : null}
+                      {locked ? (
+                        <View style={{ position: 'absolute', top: 10, right: 10, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.colors.primary }}>
+                          <Icon.Lock size={16} color={theme.colors.primary} />
+                        </View>
+                      ) : null}
+                      <View style={{ position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(0,0,0,0.6)', width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon.Video size={14} color="#FFFFFF" />
+                      </View>
+                      <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', padding: 10, gap: 4 }}>
+                        <Text numberOfLines={1} style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '800' }}>
+                          {v.title}
+                        </Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text numberOfLines={1} style={{ color: '#FFFFFF', fontSize: 11, opacity: 0.85 }}>{v.creator}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: theme.colors.primary, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 }}>
+                            {locked ? <Icon.Lock size={11} color={theme.colors.onPrimary} /> : null}
+                            <Text style={{ color: theme.colors.onPrimary, fontSize: 10, fontWeight: '900' }}>
+                              {locked ? v.price : 'Subscribed'}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </ImageBackground>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         </View>
       </ScrollView>
 
-      {/* FIXED BOTTOM NAV */}
-      <View
-        style={{
-          position: 'absolute',
-          left: 0, right: 0, bottom: 0,
-          backgroundColor: theme.colors.bg,
-          borderTopWidth: 2,
-          borderTopColor: theme.colors.border,
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          paddingTop: 12,
-          paddingBottom: Math.max(insets.bottom, 16) + 8,
-        }}
-      >
-        <NavItem label="Home" icon={<Icon.Home size={22} color={theme.colors.primary} />} active onPress={onHome} textColor={theme.colors.primary} />
-        <NavItem label="Explore" icon={<Icon.Explore size={22} />} onPress={onExplore} textColor={theme.colors.text} />
-        <NavItem label="Profile" icon={<Icon.User size={22} />} onPress={onProfile} textColor={theme.colors.text} />
-        <NavItem label="Settings" icon={<Icon.Settings size={22} />} onPress={onSettings} textColor={theme.colors.text} />
-      </View>
+      <BottomNav active="home" onNavigate={onNavigate} />
     </View>
-  );
-}
-
-function NavItem({ label, icon, onPress, active, textColor }: { label: string; icon: React.ReactNode; onPress: () => void; active?: boolean; textColor: string }) {
-  return (
-    <Pressable onPress={onPress} accessibilityLabel={label} style={{ alignItems: 'center', gap: 4 }}>
-      {icon}
-      <Text style={{ fontSize: 11, color: textColor, fontWeight: '700' }}>{label}</Text>
-      {active ? <View style={{ width: 20, height: 2, backgroundColor: '#FF0000', marginTop: 2 }} /> : null}
-    </Pressable>
   );
 }
 

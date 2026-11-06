@@ -27,6 +27,7 @@ enum Role {
 
 model User {
   id        String   @id @default(uuid())
+  email     String?  @unique
   alias     String   @unique
   role      Role     @default(member)
   ageLevel  AgeLevel @default(L0)
@@ -47,4 +48,77 @@ model GuestSession {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Creator {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  displayName     String
+  handle          String   @unique
+  bio             String?
+  avatarKey       String?
+  coverKey        String?
+  category        String?  // music | comedy | education | fitness | lifestyle | other
+  instagram       String?
+  tiktok          String?
+  youtube         String?
+  xHandle         String?
+  publicProfile   Boolean  @default(true)
+  showVideos      Boolean  @default(true)
+  showLives       Boolean  @default(true)
+  subscriptionPriceMinor Int @default(20000)
+  status          String   @default("pending") // pending | approved | rejected
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+model CreatorApplication {
+  id              String   @id @default(uuid())
+  userId          String
+  displayName     String
+  handle          String
+  bio             String?
+  avatarKey       String?
+  coverKey        String?
+  subscriptionPriceMinor Int
+  rulesAccepted   Boolean  @default(false)
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Subscription {
+  id               String   @id @default(uuid())
+  subscriberId     String
+  creatorId        String
+  status           String   @default("active") // active | past_due | cancelled | expired
+  currentPeriodEnd DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([subscriberId, creatorId])
+  @@index([subscriberId, status])
+  @@index([creatorId])
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  userId         String
+  provider       String   @default("fake")
+  providerRef    String?
+  idempotencyKey String   @unique
+  amountMinor    Int
+  currency       String   @default("KES")
+  status         String   @default("created") // created | pending | succeeded | failed | refunded
+  purpose        String   @default("subscription")
+  creatorId      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
