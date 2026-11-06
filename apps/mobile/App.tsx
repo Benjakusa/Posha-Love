@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
 import { AppBackground } from './src/components/AppBackground';
+import { GradientView } from './src/components/Gradient';
 import { AgeGateScreen } from './src/screens/AgeGateScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { ExploreScreen } from './src/screens/ExploreScreen';
@@ -13,7 +15,6 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { CreatorStudioScreen } from './src/screens/CreatorStudioScreen';
 import { CreatorWizardScreen } from './src/screens/CreatorWizardScreen';
 import { EditProfileScreen } from './src/screens/EditProfileScreen';
-import { EditCreatorProfileScreen } from './src/screens/EditCreatorProfileScreen';
 import { SignInScreen } from './src/screens/SignInScreen';
 import { CreatorBenefitsScreen } from './src/screens/CreatorBenefitsScreen';
 import { createGuestSession } from './src/api';
@@ -27,7 +28,7 @@ type Route =
   | 'studio' | 'creator-wizard' | 'edit-creator-profile';
 
 function Root() {
-  const { mode, toggle } = useTheme();
+  const { theme, mode, toggle } = useTheme();
   const [route, setRoute] = useState<Route>('gate');
   const [session, setSession] = useState<GuestSessionResponse | null>(null);
   const [booting, setBooting] = useState(true);
@@ -80,9 +81,10 @@ function Root() {
 
   if (booting) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
+      <GradientView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <StatusBar style={mode === 'dark' ? 'dark' : 'light'} />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </GradientView>
     );
   }
 
@@ -162,7 +164,12 @@ function Root() {
       screen = gate;
   }
 
-  return <View style={{ flex: 1 }}>{screen}</View>;
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+      {screen}
+    </View>
+  );
 }
 
 export default function App() {

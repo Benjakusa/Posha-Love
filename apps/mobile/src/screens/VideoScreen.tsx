@@ -60,17 +60,20 @@ export function VideoScreen({ token, onBack }: Props) {
         </Text>
 
         {status === 'searching' ? (
-          <Text style={{ color: theme.colors.text, fontSize: 13, textAlign: 'center', opacity: 0.7 }}>
+          <Text style={{ color: theme.colors.textMuted, fontSize: 13, textAlign: 'center' }}>
             Guests: 2 minute limit. Be kind. You can leave anytime.
           </Text>
         ) : null}
 
         {status === 'matched' ? (
-          <View style={{ marginTop: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 2, borderColor: theme.colors.primary, borderRadius: theme.radii.md }}>
-            <Text style={{ color: theme.colors.text, fontSize: 13, textAlign: 'center', fontWeight: '700' }}>
-              Video calling is not available in Expo Go.
-            </Text>
-            <Text style={{ color: theme.colors.text, fontSize: 12, textAlign: 'center', opacity: 0.7, marginTop: 4 }}>
+          <View style={{ marginTop: 12, paddingVertical: 14, paddingHorizontal: 16, borderWidth: 2, borderColor: theme.colors.warning, borderRadius: theme.radii.md, backgroundColor: theme.colors.surface, gap: 6, alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Icon.Warning size={18} color={theme.colors.warning} />
+              <Text style={{ color: theme.colors.text, fontSize: 13, textAlign: 'center', fontWeight: '800' }}>
+                Video calling is not available in Expo Go.
+              </Text>
+            </View>
+            <Text style={{ color: theme.colors.textMuted, fontSize: 12, textAlign: 'center' }}>
               Build the native app to enable camera streaming. You can still chat via text.
             </Text>
           </View>

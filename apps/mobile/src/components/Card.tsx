@@ -12,37 +12,43 @@ type Props = {
 
 export function Card({ title, subtitle, onPress, children, style }: Props) {
   const { theme } = useTheme();
+
   const content = (
     <View
       style={[
         {
-          borderWidth: 2,
-          borderColor: theme.colors.border,
           borderRadius: theme.radii.lg,
-          padding: theme.spacing(5),
+          padding: 12,
           backgroundColor: theme.colors.surface,
-          gap: theme.spacing(2),
+          gap: 6,
         },
         style,
       ]}
     >
       {title ? (
-        <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.lg, fontWeight: '800' }}>
+        <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '700', lineHeight: 22 }}>
           {title}
         </Text>
       ) : null}
       {subtitle ? (
-        <Text style={{ color: theme.colors.text, fontSize: theme.fontSizes.sm }}>{subtitle}</Text>
+        <Text style={{ color: theme.colors.textMuted, fontSize: 13, lineHeight: 18 }}>
+          {subtitle}
+        </Text>
       ) : null}
       {children}
     </View>
   );
+
   if (!onPress) return content;
+
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+      style={({ pressed }) => ({
+        backgroundColor: pressed ? theme.colors.surfaceAlt : 'transparent',
+        borderRadius: theme.radii.lg,
+      })}
     >
       {content}
     </Pressable>

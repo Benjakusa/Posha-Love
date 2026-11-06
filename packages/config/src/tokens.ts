@@ -1,47 +1,48 @@
-// POSHA design tokens.
-// Main palette: bright red, yellow (dark-mode accent), blue, black, white.
-// Chat colors: scoped WhatsApp-inspired palette (only used inside ChatScreen).
+// POSHA design tokens - Monochromatic Red Design System
+// Only 5 permitted colours: #FF0000, #FF4D4D, #808080, #000000, #FFFFFF
 
 export const palette = {
-  red:    '#FF0000',
-  yellow: '#FFD400',
-  blue:   '#0066FF',
-  black:  '#000000',
-  white:  '#FFFFFF',
-} as const;
-
-export const chatColors = {
-  bg:           '#E9EDEF', // conversation area background
-  bubbleIn:     '#FFFFFF', // incoming bubble
-  bubbleOut:    '#D9FDD3', // outgoing bubble
-  bubbleText:   '#222222', // text in both bubbles
-  meta:         '#718096', // timestamps
-  tick:         '#53A5A0', // double-check read
-  tickDelivered:'#718096', // single check delivered
+  white: '#FFFFFF',
+  black: '#000000',
 } as const;
 
 export type ThemeMode = 'light' | 'dark';
 
+export type ChatThemeColors = {
+  bg: string;
+  bubbleIn: string;
+  bubbleOut: string;
+  bubbleText: string;
+  meta: string;
+  tick: string;
+  tickDelivered: string;
+};
+
+export type ThemeColors = {
+  bg: string;
+  surface: string;
+  surfaceAlt: string;
+  text: string;
+  textMuted: string;
+  border: string;
+  divider: string;
+  primary: string;
+  primaryPressed: string;
+  onPrimary: string;
+  primaryText: string;
+  accent: string;
+  accentSoft: string;
+  danger: string;
+  icon: string;
+  iconActive: string;
+  scrim: string;
+  onMedia: string;
+};
+
 export type Theme = {
   mode: ThemeMode;
-  colors: {
-    bg: string;
-    surface: string;
-    surfaceAlt: string;
-    text: string;
-    textMuted: string;
-    textInverse: string;
-    primary: string;
-    onPrimary: string;
-    link: string;
-    icon: string;
-    border: string;
-    divider: string;
-    danger: string;
-    success: string;
-    lockedTile: string;
-  };
-  chat: typeof chatColors;
+  colors: ThemeColors;
+  chat: ChatThemeColors;
   radii: { sm: number; md: number; lg: number; xl: number; pill: number };
   spacing: (n: number) => number;
   fontSizes: { xs: number; sm: number; md: number; lg: number; xl: number; xxl: number; display: number };
@@ -49,55 +50,85 @@ export type Theme = {
   palette: typeof palette;
 };
 
-const radii = { sm: 8, md: 12, lg: 20, xl: 28, pill: 999 };
+const radii = { sm: 8, md: 12, lg: 12, xl: 16, pill: 999 };
 const spacing = (n: number) => n * 4;
-const fontSizes = { xs: 12, sm: 14, md: 16, lg: 20, xl: 28, xxl: 36, display: 48 };
+const fontSizes = { xs: 11, sm: 13, md: 17, xl: 20, xxl: 24, display: 28 };
 const motion = { fast: 150, base: 250, slow: 400 };
 
 export const lightTheme: Theme = {
   mode: 'light',
   colors: {
-    bg: palette.white,
-    surface: palette.white,
-    surfaceAlt: palette.white,
-    text: palette.black,
-    textMuted: palette.black,
-    textInverse: palette.white,
-    primary: palette.red,
-    onPrimary: palette.white,
-    link: palette.blue,
-    icon: palette.blue,
-    border: palette.black,
-    divider: palette.black,
-    danger: palette.red,
-    success: palette.blue,
-    lockedTile: palette.black,
+    bg: '#FFFFFF',
+    surface: '#FFFFFF',
+    surfaceAlt: '#808080',
+    text: '#000000',
+    textMuted: '#808080',
+    border: '#808080',
+    divider: '#808080',
+    primary: '#FF0000',
+    primaryPressed: '#FF4D4D',
+    onPrimary: '#FFFFFF',
+    primaryText: '#FF0000',
+    accent: '#FF4D4D',
+    accentSoft: '#FFFFFF',
+    danger: '#FF4D4D',
+    icon: '#808080',
+    iconActive: '#FF0000',
+    scrim: '#000000',
+    onMedia: '#FFFFFF',
   },
-  chat: chatColors,
-  radii, spacing, fontSizes, motion, palette,
+  chat: {
+    bg: '#FFFFFF',
+    bubbleIn: '#FFFFFF',
+    bubbleOut: '#FFE3E8',
+    bubbleText: '#000000',
+    meta: '#808080',
+    tick: '#FF0000',
+    tickDelivered: '#808080',
+  },
+  radii,
+  spacing,
+  fontSizes,
+  motion,
+  palette,
 };
 
 export const darkTheme: Theme = {
   mode: 'dark',
   colors: {
-    bg: palette.black,
-    surface: palette.black,
-    surfaceAlt: palette.black,
-    text: palette.white,
-    textMuted: palette.white,
-    textInverse: palette.black,
-    primary: palette.yellow,
-    onPrimary: palette.black,
-    link: palette.blue,
-    icon: palette.blue,
-    border: palette.white,
-    divider: palette.white,
-    danger: palette.red,
-    success: palette.blue,
-    lockedTile: palette.black,
+    bg: '#000000',
+    surface: '#000000',
+    surfaceAlt: '#808080',
+    text: '#FFFFFF',
+    textMuted: '#808080',
+    border: '#808080',
+    divider: '#808080',
+    primary: '#FF0000',
+    primaryPressed: '#FF4D4D',
+    onPrimary: '#FFFFFF',
+    primaryText: '#FF4D4D',
+    accent: '#FF4D4D',
+    accentSoft: '#000000',
+    danger: '#FF4D4D',
+    icon: '#808080',
+    iconActive: '#FF0000',
+    scrim: '#000000',
+    onMedia: '#FFFFFF',
   },
-  chat: chatColors,
-  radii, spacing, fontSizes, motion, palette,
+  chat: {
+    bg: '#000000',
+    bubbleIn: '#000000',
+    bubbleOut: '#3A1B24',
+    bubbleText: '#FFFFFF',
+    meta: '#808080',
+    tick: '#FF4D4D',
+    tickDelivered: '#808080',
+  },
+  radii,
+  spacing,
+  fontSizes,
+  motion,
+  palette,
 };
 
 export const themes = { light: lightTheme, dark: darkTheme } as const;

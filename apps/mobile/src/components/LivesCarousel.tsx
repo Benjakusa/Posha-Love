@@ -47,34 +47,31 @@ export function LivesCarousel({ subs }: { subs: Set<string> }) {
 
   return (
     <View style={{ marginBottom: 24, marginHorizontal: -24 }}>
-      <Text style={{ paddingHorizontal: 24, color: theme.colors.text, fontSize: theme.fontSizes.lg, fontWeight: '800', marginBottom: 12, marginTop: 12 }}>
-        Lives soon
-      </Text>
+      <Text style={{ paddingHorizontal: 24, color: theme.colors.text, fontSize: theme.fontSizes.lg, fontWeight: '800', marginBottom: 12, marginTop: 12 }}>Lives soon</Text>
 
-      {/* FULL-BLEED — no horizontal padding, no card border, no rounded corners */}
-      <ImageBackground source={{ uri: live.image }} style={{ width: '100%', height: 320, justifyContent: 'flex-end' }} imageStyle={{ backgroundColor: theme.colors.lockedTile }}>
-        {/* Full-image dark overlay */}
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.55)' }]} />
+      <ImageBackground source={{ uri: live.image }} style={{ width: '100%', height: 320, justifyContent: 'flex-end' }} imageStyle={{ backgroundColor: theme.colors.surface }}>
+        {/* Full-image overlay for readability - solid black only */}
+        <View style={StyleSheet.absoluteFill} style={{ backgroundColor: theme.colors.scrim }} />
 
         {/* Blinking LIVE badge */}
         <View style={{ position: 'absolute', top: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.primary, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>
-          <Animated.View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF', opacity }} />
+          <Animated.View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: theme.colors.onPrimary, opacity }} />
           <Text style={{ color: theme.colors.onPrimary, fontSize: 11, fontWeight: '900', letterSpacing: 0.5 }}>LIVE</Text>
         </View>
 
-        {/* Bottom text block */}
-        <View style={{ padding: 24, gap: 8, backgroundColor: 'rgba(0,0,0,0.35)', paddingBottom: 32 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '900' }}>{live.title}</Text>
+        {/* Bottom text block - solid black background */}
+        <View style={{ padding: 24, gap: 8, backgroundColor: theme.colors.accentSoft, paddingBottom: 32 }}>
+          <Text style={{ color: theme.colors.onMedia, fontSize: 24, fontWeight: '900' }}>{live.title}</Text>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 13 }}>{live.creator} · {live.in}</Text>
+            <Text style={{ color: theme.colors.onMedia, fontSize: 13 }}>{live.creator} · {live.in}</Text>
             {isSubscribed ? (
-              <Pressable style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 }}>
+              <Pressable style={({ pressed }) => ({ backgroundColor: pressed ? theme.colors.primaryPressed : theme.colors.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 })}>
                 <Text style={{ color: theme.colors.onPrimary, fontSize: 13, fontWeight: '800' }}>Join</Text>
               </Pressable>
             ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: theme.colors.primary }}>
-                <Icon.Lock size={14} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '800' }}>Subscribers only</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.surfaceAlt, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: theme.colors.accent }}>
+                <Icon.Lock size={14} color={theme.colors.accent} />
+                <Text style={{ color: theme.colors.accent, fontSize: 13, fontWeight: '800' }}>Subscribers only</Text>
               </View>
             )}
           </View>

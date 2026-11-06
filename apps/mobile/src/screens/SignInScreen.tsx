@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
-import { Icon } from '../icons';
+import { BackBar } from '../components/BackBar';
+import { Chip } from '../components/Chip';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
 import { API_BASE } from '../api';
 import type { GuestSessionResponse } from '@posha/shared';
 
@@ -12,9 +14,9 @@ type Props = {
   onBack: () => void;
 };
 
-export function SignInScreen({ role, onSuccess, onBack }: Props) {
+export function SignInScreen({ role: initialRole, onSuccess, onBack }: Props) {
   const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
+  const [role, setRole] = useState<'member' | 'creator'>(initialRole);
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -22,7 +24,8 @@ export function SignInScreen({ role, onSuccess, onBack }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const requestOtp = async () => {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`${API_BASE}/auth/otp/request`, {
         method: 'POST',
@@ -33,11 +36,14 @@ export function SignInScreen({ role, onSuccess, onBack }: Props) {
       setStep('code');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const verifyOtp = async () => {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`${API_BASE}/auth/otp/verify`, {
         method: 'POST',
@@ -60,94 +66,89 @@ export function SignInScreen({ role, onSuccess, onBack }: Props) {
       } as GuestSessionResponse);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <View style={{
-          paddingTop: insets.top + 12, paddingBottom: 12, paddingHorizontal: 16,
-          flexDirection: 'row', alignItems: 'center', gap: 12,
-          borderBottomWidth: 2, borderBottomColor: theme.colors.border,
-        }}>
-          <Pressable onPress={onBack}><Icon.Back size={26} color={theme.colors.text} /></Pressable>
-          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
-            {role === 'creator' ? 'Sign in as creator' : 'Sign in'}
-          </Text>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <BackBar onBack={onBack} />
+
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, gap: 20 }}>
+        {/* Role pill */}
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Chip label="Member" selected={role === 'member'} onPress={() => setRole('member')} />
+          <Chip label="Creator" selected={role === 'creator'} onPress={() => setRole('creator')} />
         </View>
 
-        <View style={{ padding: 24, gap: 20 }}>
-          {step === 'email' ? (
-            <>
-              <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900' }}>Enter your email</Text>
-              <Text style={{ color: theme.colors.text, fontSize: 14, opacity: 0.7 }}>
-                We'll send you a 6-digit code. It expires in 10 minutes.
+        {step === 'email' ? (
+          <View style={{ gap: 16 }}>
+            <View style={{ gap: 6 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '700', lineHeight: 28 }}>
+                Enter your email
               </Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                placeholderTextColor={theme.colors.text}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                style={input(theme)}
-              />
-              {error ? <Text style={{ color: theme.colors.danger, fontSize: 13 }}>{error}</Text> : null}
-              <Pressable
-                onPress={requestOtp}
-                disabled={!email.includes('@') || loading}
-                style={[btn(theme), { opacity: !email.includes('@') || loading ? 0.5 : 1 }]}
-              >
-                {loading ? <ActivityIndicator color={theme.colors.onPrimary} /> :
-                  <Text style={{ color: theme.colors.onPrimary, fontWeight: '800', fontSize: 16 }}>Send code</Text>}
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900' }}>Enter the code</Text>
-              <Text style={{ color: theme.colors.text, fontSize: 14, opacity: 0.7 }}>
+              <Text style={{ color: theme.colors.textMuted, fontSize: 15, lineHeight: 21 }}>
+                We'll send you a 6-digit code.
+              </Text>
+            </View>
+
+            <Input
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              error={error}
+            />
+
+            <Button
+              label="Send code"
+              onPress={requestOtp}
+              disabled={!email.includes('@') || loading}
+              loading={loading}
+              minHeight={48}
+              style={{ marginTop: 16 }}
+            />
+          </View>
+        ) : (
+          <View style={{ gap: 16 }}>
+            <View style={{ gap: 6 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '700', lineHeight: 28 }}>
+                Enter the code
+              </Text>
+              <Text style={{ color: theme.colors.textMuted, fontSize: 15, lineHeight: 21 }}>
                 Sent to {email}. Check the API terminal if using console delivery.
               </Text>
-              <TextInput
-                value={code}
-                onChangeText={(t) => setCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
-                placeholder="000000"
-                placeholderTextColor={theme.colors.text}
-                keyboardType="number-pad"
-                maxLength={6}
-                style={[input(theme), { fontSize: 28, textAlign: 'center', letterSpacing: 8 }]}
-              />
-              {error ? <Text style={{ color: theme.colors.danger, fontSize: 13 }}>{error}</Text> : null}
-              <Pressable
-                onPress={verifyOtp}
-                disabled={code.length !== 6 || loading}
-                style={[btn(theme), { opacity: code.length !== 6 || loading ? 0.5 : 1 }]}
-              >
-                {loading ? <ActivityIndicator color={theme.colors.onPrimary} /> :
-                  <Text style={{ color: theme.colors.onPrimary, fontWeight: '800', fontSize: 16 }}>Verify</Text>}
-              </Pressable>
-              <Pressable onPress={() => setStep('email')}>
-                <Text style={{ color: theme.colors.text, fontSize: 13, textAlign: 'center', opacity: 0.7 }}>
-                  Use a different email
-                </Text>
-              </Pressable>
-            </>
-          )}
-        </View>
-      </View>
+            </View>
+
+            <Input
+              value={code}
+              onChangeText={(t) => setCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
+              placeholder="000000"
+              keyboardType="number-pad"
+              maxLength={6}
+              error={error}
+              style={{ fontSize: 24, fontWeight: '600', letterSpacing: 8, textAlign: 'center' }}
+            />
+
+            <Button
+              label="Verify"
+              onPress={verifyOtp}
+              disabled={code.length !== 6 || loading}
+              loading={loading}
+              minHeight={48}
+              style={{ marginTop: 16 }}
+            />
+
+            <View style={{ alignItems: 'center', gap: 8 }}>
+              <Button label="Use a different email" variant="tertiary" onPress={() => setStep('email')} />
+              <Button label="Resend code" variant="tertiary" onPress={requestOtp} />
+            </View>
+          </View>
+        )}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const input = (theme: ReturnType<typeof useTheme>['theme']) => ({
-  color: theme.colors.text,
-  borderWidth: 2, borderColor: theme.colors.border, borderRadius: theme.radii.md,
-  paddingHorizontal: 16, paddingVertical: 14, fontSize: 16,
-} as const);
-
-const btn = (theme: ReturnType<typeof useTheme>['theme']) => ({
-  backgroundColor: theme.colors.primary,
-  paddingVertical: 16, borderRadius: 999, alignItems: 'center' as const,
-} as const);

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Modal } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 import { Icon } from '../icons';
+import { Input } from './Input';
+import { Button } from './Button';
 import { createSubscription } from '../api';
 
 type Props = {
@@ -37,83 +39,59 @@ export function SubscribeSheet({ visible, token, creatorAlias, priceMinor, onClo
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable
         onPress={onClose}
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+        style={{ flex: 1, backgroundColor: theme.colors.scrim, justifyContent: 'flex-end' }}
       >
         <Pressable
           onPress={(e) => e.stopPropagation()}
           style={{
             backgroundColor: theme.colors.bg,
-            borderTopLeftRadius: theme.radii.xl,
-            borderTopRightRadius: theme.radii.xl,
-            padding: 24,
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            padding: 16,
             gap: 16,
-            borderTopWidth: 2,
-            borderColor: theme.colors.border,
           }}
         >
+          {/* Grab handle */}
+          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.colors.border, alignSelf: 'center' }} />
+
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>
+            <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '700', lineHeight: 22 }}>
               Subscribe to {creatorAlias}
             </Text>
-            <Pressable onPress={onClose} accessibilityLabel="Close">
-              <Icon.Close size={22} color={theme.colors.text} />
+            <Pressable onPress={onClose} accessibilityLabel="Close" style={{ padding: 4 }}>
+              <Icon.Close size={20} color={theme.colors.icon} />
             </Pressable>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <View style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 }}>
-              <Text style={{ color: theme.colors.onPrimary, fontWeight: '900', fontSize: 15 }}>
+            <View style={{ backgroundColor: theme.colors.accentSoft, paddingHorizontal: 12, paddingVertical: 6, borderRadius: theme.radii.pill }}>
+              <Text style={{ color: theme.colors.primaryText, fontWeight: '600', fontSize: 15 }}>
                 KSh {(priceMinor / 100).toFixed(0)} / month
               </Text>
             </View>
-            <Text style={{ color: theme.colors.text, fontSize: 13, opacity: 0.75 }}>
+            <Text style={{ color: theme.colors.textMuted, fontSize: 13, flex: 1 }}>
               Unlocks all their videos for 30 days.
             </Text>
           </View>
 
-          <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '700' }}>
-            M-Pesa number
-          </Text>
-          <TextInput
+          <Input
+            label="M-Pesa number"
             value={phone}
             onChangeText={setPhone}
             placeholder="07XX XXX XXX"
-            placeholderTextColor={theme.colors.text}
             keyboardType="phone-pad"
-            style={{
-              borderWidth: 2,
-              borderColor: theme.colors.border,
-              borderRadius: theme.radii.md,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              color: theme.colors.text,
-              fontSize: 15,
-            }}
+            error={error}
           />
 
-          {error ? <Text style={{ color: theme.colors.danger, fontSize: 13 }}>{error}</Text> : null}
-
-          <Pressable
+          <Button
+            label="Pay and unlock"
             onPress={pay}
             disabled={loading || phone.replace(/\D/g, '').length < 9}
-            style={{
-              backgroundColor: theme.colors.primary,
-              paddingVertical: 16,
-              borderRadius: 999,
-              alignItems: 'center',
-              opacity: loading || phone.replace(/\D/g, '').length < 9 ? 0.5 : 1,
-            }}
-          >
-            {loading ? (
-              <ActivityIndicator color={theme.colors.onPrimary} />
-            ) : (
-              <Text style={{ color: theme.colors.onPrimary, fontWeight: '900', fontSize: 15 }}>
-                Pay and unlock
-              </Text>
-            )}
-          </Pressable>
+            loading={loading}
+            minHeight={48}
+          />
 
-          <Text style={{ color: theme.colors.text, fontSize: 11, opacity: 0.6, textAlign: 'center' }}>
+          <Text style={{ color: theme.colors.textMuted, fontSize: 12, textAlign: 'center' }}>
             Dev mode: payment is simulated. No real money is charged.
           </Text>
         </Pressable>

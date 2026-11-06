@@ -5,16 +5,69 @@ import { useTheme } from '../theme/ThemeProvider';
 type Props = {
   label: string;
   onPress?: () => void;
-  variant?: 'primary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'destructive' | 'ghost';
   loading?: boolean;
   disabled?: boolean;
+  minHeight?: number;
   style?: ViewStyle;
 };
 
-export function Button({ label, onPress, variant = 'primary', loading, disabled, style }: Props) {
+export function Button({
+  label,
+  onPress,
+  variant = 'primary',
+  loading = false,
+  disabled = false,
+  minHeight = 44,
+  style,
+}: Props) {
   const { theme } = useTheme();
-  const isPrimary = variant === 'primary';
   const isDisabled = disabled || loading;
+
+  const bg = (() => {
+    switch (variant) {
+      case 'primary':
+        return theme.colors.primary;
+      case 'secondary':
+        return theme.colors.accentSoft;
+      case 'destructive':
+        return theme.colors.surface;
+      case 'tertiary':
+      case 'ghost':
+      default:
+        return 'transparent';
+    }
+  })();
+
+  const pressedBg = (() => {
+    switch (variant) {
+      case 'primary':
+        return theme.colors.primaryPressed;
+      case 'secondary':
+      case 'destructive':
+      case 'tertiary':
+      case 'ghost':
+      default:
+        return theme.colors.surfaceAlt;
+    }
+  })();
+
+  const textColor = (() => {
+    switch (variant) {
+      case 'primary':
+        return theme.colors.onPrimary;
+      case 'secondary':
+      case 'tertiary':
+        return theme.colors.primaryText;
+      case 'destructive':
+        return theme.colors.danger;
+      case 'ghost':
+      default:
+        return theme.colors.text;
+    }
+  })();
+
+  const fontSize = variant === 'tertiary' ? 15 : 16;
 
   return (
     <Pressable
@@ -23,28 +76,27 @@ export function Button({ label, onPress, variant = 'primary', loading, disabled,
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       style={({ pressed }) => [
         {
-          paddingVertical: 16,
-          paddingHorizontal: 24,
+          minHeight,
+          paddingVertical: 12,
+          paddingHorizontal: 20,
           borderRadius: theme.radii.pill,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: isPrimary ? theme.colors.primary : 'transparent',
-          borderWidth: isPrimary ? 0 : 2,
-          borderColor: theme.colors.border,
-          opacity: isDisabled ? 0.4 : pressed ? 0.85 : 1,
-          minHeight: 52,
+          backgroundColor: pressed && !isDisabled ? pressedBg : bg,
+          opacity: isDisabled ? 0.4 : 1,
         },
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? theme.colors.onPrimary : theme.colors.text} />
+        <ActivityIndicator color={textColor} />
       ) : (
         <Text
           style={{
-            color: isPrimary ? theme.colors.onPrimary : theme.colors.text,
-            fontSize: theme.fontSizes.md,
-            fontWeight: '700',
+            color: textColor,
+            fontSize,
+            fontWeight: '600',
+            lineHeight: 20,
           }}
         >
           {label}

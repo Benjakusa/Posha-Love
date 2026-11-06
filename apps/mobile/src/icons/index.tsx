@@ -1,11 +1,10 @@
 import React from 'react';
 import { Text, type TextProps } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
-import { palette } from '@posha/config';
 
 type IconProps = { size?: number; color?: string } & Omit<TextProps, 'style'>;
 
-function Glyph({ children, size = 22, color = palette.blue, ...rest }: IconProps & { children: string }) {
+function Glyph({ children, size = 22, color = '#FF0000', ...rest }: IconProps & { children: string }) {
   return (
     <Text
       style={{ fontSize: size, color, lineHeight: size + 2, textAlign: 'center' }}
@@ -18,7 +17,7 @@ function Glyph({ children, size = 22, color = palette.blue, ...rest }: IconProps
 }
 
 // Closed padlock — keyhole is a real hole (transparent), not a black dot.
-function Padlock({ size = 22, color = palette.blue }: IconProps) {
+function Padlock({ size = 22, color = '#FF0000' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="5" y="11" width="14" height="10" rx="2" fill={color} />
@@ -30,14 +29,14 @@ function Padlock({ size = 22, color = palette.blue }: IconProps) {
         strokeLinejoin="round"
       />
       {/* keyhole cut-out */}
-      <Circle cx="12" cy="16" r="1.6" fill="none" stroke="#00000000" />
+      <Circle cx="12" cy="16" r="1.6" fill="none" stroke="transparent" />
       <Circle cx="12" cy="16" r="1.6" fillOpacity={0} />
     </Svg>
   );
 }
 
 // Open padlock — shackle tilted open to the right.
-function Unlock({ size = 22, color = palette.blue }: IconProps) {
+function Unlock({ size = 22, color = '#FF0000' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="5" y="11" width="14" height="10" rx="2" fill={color} />
@@ -72,4 +71,5 @@ export const Icon = {
   Home:     (p: IconProps) => <Glyph {...p}>⌂</Glyph>,
   Explore:  (p: IconProps) => <Glyph {...p}>◇</Glyph>,
   Filter:   (p: IconProps) => <Glyph {...p}>≡</Glyph>,
+  Warning:  (p: IconProps) => <Glyph {...p}>⚠</Glyph>,
 };
