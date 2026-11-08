@@ -11,7 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "cloud.posha.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "POSHA uses your camera for video chat with strangers. You are always in control — video only starts after you tap to enable it.",
+        "NSCameraUsageDescription": "POSHA uses your camera for video chat with strangers. You are always in control \u2014 video only starts after you tap to enable it.",
         "NSMicrophoneUsageDescription": "POSHA uses your microphone for video chat with strangers. You can mute anytime."
       },
       "bitcode": false
