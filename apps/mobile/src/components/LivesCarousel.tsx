@@ -51,7 +51,7 @@ export function LivesCarousel({ subs }: { subs: Set<string> }) {
 
       <ImageBackground source={{ uri: live.image }} style={{ width: '100%', height: 320, justifyContent: 'flex-end' }} imageStyle={{ backgroundColor: theme.colors.surface }}>
         {/* Full-image overlay for readability - solid black only */}
-        <View style={StyleSheet.absoluteFill} style={{ backgroundColor: theme.colors.scrim }} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.scrim }]} />
 
         {/* Blinking LIVE badge */}
         <View style={{ position: 'absolute', top: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.primary, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>

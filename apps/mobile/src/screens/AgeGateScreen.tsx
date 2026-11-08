@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
 import { Screen } from '../components/Screen';
+import { Button } from '../components/Button';
 
 type Props = {
   onGuest: () => Promise<void>;
@@ -48,30 +49,17 @@ export function AgeGateScreen({ onGuest, onSignIn, onSignInCreator }: Props) {
           </Text>
         </View>
 
-        {/* Centre block */}
-        <View style={{ alignItems: 'center', gap: 16 }}>
-          {/* Solid red circle replacement for gradient */}
-          <View style={{
-            width: 120,
-            height: 120,
-            borderRadius: 28,
-            backgroundColor: theme.colors.primary,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
+        {/* Centre block — left aligned, three lines */}
+        <View style={{ gap: 16 }}>
+          <Text style={{
+            color: theme.colors.text,
+            fontSize: 48,
+            fontWeight: '900',
+            lineHeight: 52,
+            letterSpacing: -1,
+            textAlign: 'left',
           }}>
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-            }}>
-              <Text style={{ color: '#FFFFFF', fontSize: 36 }}>\u2661</Text>
-              <Text style={{ color: '#FFFFFF', fontSize: 36 }}>\u2709</Text>
-            </View>
-          </View>
-
-          <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '700', lineHeight: 34, textAlign: 'center' }}>
-            Meet. Chat. Connect.
+            Meet.{'\n'}Chat.{'\n'}Connect.
           </Text>
 
           <Text
@@ -80,8 +68,8 @@ export function AgeGateScreen({ onGuest, onSignIn, onSignInCreator }: Props) {
               fontSize: 15,
               fontWeight: '400',
               lineHeight: 21,
-              textAlign: 'center',
-              maxWidth: 300,
+              textAlign: 'left',
+              maxWidth: 320,
             }}
           >
             Adults only. Non-explicit. Report, block, and leave at any time.
@@ -90,18 +78,16 @@ export function AgeGateScreen({ onGuest, onSignIn, onSignInCreator }: Props) {
 
         {/* Bottom block */}
         <View style={{ gap: 12 }}>
-          {/* Age confirmation row */}
+          {/* Age confirmation row — clean, no box */}
           <Pressable
             onPress={() => setConfirmed((c) => !c)}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: confirmed }}
             style={{
-              backgroundColor: theme.colors.surface,
-              borderRadius: theme.radii.lg,
-              padding: 14,
               flexDirection: 'row',
               alignItems: 'center',
               gap: 12,
+              paddingVertical: 14,
             }}
           >
             <View
@@ -109,24 +95,23 @@ export function AgeGateScreen({ onGuest, onSignIn, onSignInCreator }: Props) {
                 width: 24,
                 height: 24,
                 borderRadius: 6,
-                borderWidth: 1.5,
+                borderWidth: 2,
                 borderColor: confirmed ? theme.colors.primary : theme.colors.border,
                 backgroundColor: confirmed ? theme.colors.primary : 'transparent',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              {confirmed ? <Text style={{ color: theme.colors.onPrimary, fontSize: 14, fontWeight: '600' }}>\u2713</Text> : null}
+              {confirmed ? <Text style={{ color: theme.colors.onPrimary, fontSize: 16, fontWeight: '900' }}>✓</Text> : null}
             </View>
             <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '600', flex: 1 }}>
               I am 18 years or older
             </Text>
           </Pressable>
 
+          {/* Error — only appears after pressing a button */}
           {error ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={{ color: theme.colors.danger, fontSize: 13, lineHeight: 18, flex: 1 }}>{error}</Text>
-            </View>
+            <Text style={{ color: theme.colors.danger, fontSize: 13, lineHeight: 18 }}>{error}</Text>
           ) : null}
 
           <Button
@@ -155,7 +140,7 @@ export function AgeGateScreen({ onGuest, onSignIn, onSignInCreator }: Props) {
 
           <Text style={{ color: theme.colors.textMuted, fontSize: 12, lineHeight: 16, textAlign: 'center' }}>
             By entering you agree to the
-            <Text style={{ color: theme.colors.primaryText, textDecorationLine: 'underline' }}>Terms</Text>.
+            <Text style={{ color: theme.colors.primaryText, textDecorationLine: 'underline' }}> Terms</Text>.
           </Text>
         </View>
       </View>

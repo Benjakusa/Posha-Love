@@ -45,9 +45,9 @@ export function Input({
           {
             minHeight: multiline ? 90 : 44,
             borderRadius: multiline ? theme.radii.md : theme.radii.pill,
-            backgroundColor: theme.colors.surface,
+            backgroundColor: theme.mode === 'light' ? '#F5F6F8' : theme.colors.surface,
             borderWidth: focused ? 1.5 : 0,
-            borderColor: focused ? theme.colors.accent : 'transparent',
+            borderColor: focused ? theme.colors.primary : theme.colors.border,
             paddingHorizontal: 16,
             paddingVertical: multiline ? 12 : 10,
             color: theme.colors.text,

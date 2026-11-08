@@ -33,7 +33,7 @@ export function CreatorBenefitsScreen({ onApply, onBack }: Props) {
       <BackBar title="Become a creator" onBack={onBack} />
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100, gap: 20 }}>
-        {/* Hero card */
+        {/* Hero card */}
         <View style={{ backgroundColor: theme.colors.surface, borderRadius: theme.radii.lg, padding: 20, gap: 12 }}>
           <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
             <Icon.Heart size={24} color="#FFFFFF" />
@@ -70,7 +70,7 @@ export function CreatorBenefitsScreen({ onApply, onBack }: Props) {
           </View>
         </View>
 
-        {/* Policy note */
+        {/* Policy note */}
         <View
           style={{
             backgroundColor: theme.colors.accentSoft,
@@ -86,7 +86,7 @@ export function CreatorBenefitsScreen({ onApply, onBack }: Props) {
         </View>
       </ScrollView>
 
-      {/* Sticky bottom bar */
+      {/* Sticky bottom bar */}
       <View
         style={{
           position: 'absolute',

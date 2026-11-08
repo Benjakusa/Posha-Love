@@ -13,12 +13,8 @@ const ThemeCtx = createContext<Ctx | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const system = useColorScheme();
-  const [mode, setMode] = useState<ThemeMode>(system === 'dark' ? 'dark' : 'light');
-  // follow the system if user hasn't explicitly toggled
+  const [mode, setMode] = useState<ThemeMode>('light');
   const [pinned, setPinned] = useState(false);
-  useEffect(() => {
-    if (!pinned && (system === 'dark' || system === 'light')) setMode(system);
-  }, [system, pinned]);
 
   const value: Ctx = {
     theme: themes[mode],

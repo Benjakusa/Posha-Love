@@ -1,14 +1,28 @@
 import type { GuestSessionResponse } from '@posha/shared';
 
 // HARDCODED for testing. Change this IP if your laptop's LAN IP changes.
-export const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? 'http://localhost:3000/api/v1';
+export const API_BASE = 'http://10.223.163.53:3000/api/v1';
+console.log('[API_BASE]', API_BASE);
 
 export async function createGuestSession(): Promise<GuestSessionResponse> {
-  const res = await fetch(`${API_BASE}/guest/session`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ageDeclaration: true }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/guest/session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ageDeclaration: true }),
+      signal: controller.signal,
+    });
+  } catch (e: any) {
+    if (e?.name === 'AbortError') {
+      throw new Error(`API timeout — cannot reach ${API_BASE}`);
+    }
+    throw new Error(`Network error: ${e?.message ?? 'unknown'}`);
+  } finally {
+    clearTimeout(timeoutId);
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: 'Unknown error' }));
     throw new Error(err.message ?? `HTTP ${res.status}`);
@@ -37,20 +51,42 @@ export async function listMySubscriptions(token: string): Promise<Subscription[]
   return json.subscriptions;
 }
 
-export async function createSubscription(
+export async function subscribeToCreator(
   token: string,
-  creatorAlias: string,
-  plan: string,
-  priceMinor: number,
-): Promise<Subscription> {
-  const res = await fetch(`${API_BASE}/subscriptions`, {
+  creatorId: string,
+  amountMinor: number,
+): Promise<{ ok: true }> {
+  // 1. Create checkout
+  const checkoutRes = await fetch(`${API_BASE}/subscriptions/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ creatorAlias, plan, priceMinor }),
+    body: JSON.stringify({ creatorId, amountMinor }),
   });
-  if (!res.ok) throw new Error(`subscribe HTTP ${res.status}`);
-  const json = (await res.json()) as { subscription: Subscription };
-  return json.subscription;
+  if (!checkoutRes.ok) {
+    const e = await checkoutRes.json().catch(() => ({}));
+    throw new Error(e.code ?? `checkout HTTP ${checkoutRes.status}`);
+  }
+  const { paymentId, status } = await checkoutRes.json();
+  if (status === 'succeeded') return { ok: true };
+
+  // 2. Fake-pay (dev provider)
+  const payRes = await fetch(`${API_BASE}/subscriptions/fake-pay`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ paymentId }),
+  });
+  if (!payRes.ok) {
+    const e = await payRes.json().catch(() => ({}));
+    throw new Error(e.code ?? `pay HTTP ${payRes.status}`);
+  }
+  return { ok: true };
+}
+
+// Legacy alias kept for Explore/other callers — resolves alias to no-op (should be removed later)
+export async function createSubscription(
+  _token: string, _creatorAlias: string, _plan: string, _priceMinor: number,
+): Promise<any> {
+  throw new Error('createSubscription is deprecated — use subscribeToCreator(token, creatorId, amountMinor)');
 }
 
 // ===== Creator endpoints =====

@@ -52,7 +52,7 @@ export type Theme = {
 
 const radii = { sm: 8, md: 12, lg: 12, xl: 16, pill: 999 };
 const spacing = (n: number) => n * 4;
-const fontSizes = { xs: 11, sm: 13, md: 17, xl: 20, xxl: 24, display: 28 };
+const fontSizes = { xs: 11, sm: 13, md: 15, lg: 17, xl: 20, xxl: 24, display: 28 };
 const motion = { fast: 150, base: 250, slow: 400 };
 
 export const lightTheme: Theme = {

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['Creating blobs from', 'Blob', 'arraybuffer']);
 import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -8,12 +10,20 @@ import { GradientView } from './src/components/Gradient';
 import { AgeGateScreen } from './src/screens/AgeGateScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { ExploreScreen } from './src/screens/ExploreScreen';
+import { CreatorProfileScreen } from './src/screens/CreatorProfileScreen';
+import { MyCreatorProfileScreen } from './src/screens/MyCreatorProfileScreen';
+import { CreatePostScreen } from './src/screens/CreatePostScreen';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { VideoScreen } from './src/screens/VideoScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { NotificationsScreen } from './src/screens/NotificationsScreen';
+import { LegalScreen } from './src/screens/LegalScreen';
+import { ReportProblemScreen } from './src/screens/ReportProblemScreen';
+import { HelpScreen } from './src/screens/HelpScreen';
 import { CreatorStudioScreen } from './src/screens/CreatorStudioScreen';
 import { CreatorWizardScreen } from './src/screens/CreatorWizardScreen';
+import { CreatorDashboardScreen } from './src/screens/CreatorDashboardScreen';
 import { EditProfileScreen } from './src/screens/EditProfileScreen';
 import { SignInScreen } from './src/screens/SignInScreen';
 import { CreatorBenefitsScreen } from './src/screens/CreatorBenefitsScreen';
@@ -25,12 +35,13 @@ import type { NavRoute } from './src/components/BottomNav';
 type Route =
   | 'gate' | 'signin-member' | 'signin-creator' | 'creator-benefits'
   | 'home' | 'explore' | 'chat' | 'video' | 'profile' | 'settings'
-  | 'studio' | 'creator-wizard' | 'edit-creator-profile';
+  | 'studio' | 'creator-wizard' | 'edit-creator-profile' | 'creator-profile' | 'creator-dashboard' | 'create-post' | 'notifications' | 'privacy' | 'terms' | 'report-problem' | 'help';
 
 function Root() {
   const { theme, mode, toggle } = useTheme();
   const [route, setRoute] = useState<Route>('gate');
   const [session, setSession] = useState<GuestSessionResponse | null>(null);
+  const [creatorHandle, setCreatorHandle] = useState<string | null>(null);
   const [booting, setBooting] = useState(true);
 
   // Restore session on mount
@@ -69,14 +80,18 @@ function Root() {
   const onSignInSuccess = async (s: GuestSessionResponse) => {
     await saveSession(s);
     setSession(s);
-    // Existing account → straight to home, skip benefits/wizard
-    if (s.isNewUser === false) {
-      setRoute('home');
+    if (s.role === 'creator') {
+      const status = (s as any).creatorStatus;
+      // Creator with no profile yet → straight to the wizard
+      if (!status || status === 'none') {
+        setRoute('creator-wizard');
+      } else {
+        setRoute('creator-dashboard');
+      }
       return;
     }
-    // New account
-    if (s.role === 'creator') setRoute('creator-benefits');
-    else setRoute('home');
+    // Member / guest → home
+    setRoute('home');
   };
 
   if (booting) {
@@ -109,7 +124,7 @@ function Root() {
       break;
     case 'creator-wizard':
       screen = session ? (
-        <CreatorWizardScreen token={session.token} onDone={() => go('profile')} onCancel={() => go('creator-benefits')} />
+        <CreatorWizardScreen token={session.token} onDone={() => go('profile')} onCancel={() => go('home')} />
       ) : gate;
       break;
     case 'chat':
@@ -127,27 +142,93 @@ function Root() {
         />
       ) : gate;
       break;
-    case 'studio':
-      screen = <CreatorStudioScreen onBack={() => go('home')} />;
-      break;
-    case 'explore':
-      screen = session ? <ExploreScreen token={session.token} onNavigate={navigate} /> : gate;
-      break;
-    case 'profile':
-      screen = session ? (
-        <ProfileScreen
+    case 'creator-profile':
+      screen = session && creatorHandle ? (
+        <CreatorProfileScreen
           token={session.token}
-          alias={session.alias}
-          role={session.role}
-          onNavigate={navigate}
-          onStartCreator={() => (session.role === 'guest' ? go('signin-creator') : go('creator-benefits'))}
+          handle={creatorHandle}
+          onBack={() => go('home')}
+        />
+      ) : gate;
+      break;
+    case 'creator-dashboard':
+      screen = session ? (
+        <CreatorDashboardScreen
+          token={session.token}
+          creatorStatus={(session as any).creatorStatus ?? 'none'}
           onEditProfile={() => go('edit-creator-profile')}
+          onCompleteProfile={() => go('creator-wizard')}
+          onBrowse={() => go('home')}
           onSignOut={signOut}
         />
       ) : gate;
       break;
+    case 'create-post':
+      screen = session ? (
+        <CreatePostScreen
+          token={session.token}
+          onBack={() => go('profile')}
+          onCreated={() => go('profile')}
+        />
+      ) : gate;
+      break;
+    case 'studio':
+      screen = <CreatorStudioScreen onBack={() => go('home')} />;
+      break;
+    case 'explore':
+      screen = session ? <ExploreScreen token={session.token} onNavigate={navigate} onOpenCreator={(h) => { setCreatorHandle(h); go('creator-profile'); }} /> : gate;
+      break;
+    case 'profile':
+      screen = session ? (
+        session.role === 'creator' ? (
+          <MyCreatorProfileScreen
+            token={session.token}
+            onDashboard={() => go('creator-dashboard')}
+            onCreate={() => go('create-post')}
+            onEditProfile={() => go('edit-creator-profile')}
+            onCompleteProfile={() => go('creator-wizard')}
+          />
+        ) : (
+          <ProfileScreen
+            token={session.token}
+            alias={session.alias}
+            role={session.role}
+            onNavigate={navigate}
+            onStartCreator={() => (session.role === 'guest' ? go('signin-creator') : go('creator-wizard'))}
+            onEditProfile={() => go('edit-creator-profile')}
+            onSignOut={signOut}
+          />
+        )
+      ) : gate;
+      break;
+    case 'notifications':
+      screen = <NotificationsScreen onBack={() => go('settings')} />;
+      break;
+    case 'privacy':
+      screen = <LegalScreen kind="privacy" token={session?.token} onBack={() => go('settings')} />;
+      break;
+    case 'terms':
+      screen = <LegalScreen kind="terms" token={session?.token} onBack={() => go('settings')} />;
+      break;
+    case 'report-problem':
+      screen = session ? <ReportProblemScreen token={session.token} onBack={() => go('settings')} /> : gate;
+      break;
+    case 'help':
+      screen = <HelpScreen onBack={() => go('settings')} />;
+      break;
     case 'settings':
-      screen = <SettingsScreen onBack={() => go('home')} mode={mode} onToggleTheme={toggle} onSignOut={signOut} />;
+      screen = <SettingsScreen
+        onBack={() => go('home')}
+        mode={mode}
+        onToggleTheme={toggle}
+        onSignOut={signOut}
+        onEditProfile={() => go('edit-creator-profile')}
+        onNotifications={() => go('notifications')}
+        onPrivacy={() => go('privacy')}
+        onTerms={() => go('terms')}
+        onReport={() => go('report-problem')}
+        onHelp={() => go('help')}
+      />;
       break;
     case 'home':
       screen = session ? (

@@ -66,9 +66,9 @@ export function VideoScreen({ token, onBack }: Props) {
         ) : null}
 
         {status === 'matched' ? (
-          <View style={{ marginTop: 12, paddingVertical: 14, paddingHorizontal: 16, borderWidth: 2, borderColor: theme.colors.warning, borderRadius: theme.radii.md, backgroundColor: theme.colors.surface, gap: 6, alignItems: 'center' }}>
+          <View style={{ marginTop: 12, paddingVertical: 14, paddingHorizontal: 16, borderWidth: 2, borderColor: theme.colors.danger, borderRadius: theme.radii.md, backgroundColor: theme.colors.surface, gap: 6, alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Icon.Warning size={18} color={theme.colors.warning} />
+              <Icon.Warning size={18} color={theme.colors.danger} />
               <Text style={{ color: theme.colors.text, fontSize: 13, textAlign: 'center', fontWeight: '800' }}>
                 Video calling is not available in Expo Go.
               </Text>

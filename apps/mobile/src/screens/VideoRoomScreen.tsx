@@ -116,7 +116,7 @@ export function VideoRoomScreen({ payload, onLeave }: Props) {
    };
 
    // Remote video tracks
-   const remoteVideoTracks = useTracks([Track.Source.Camera, Track.Source.Screen]).filter(
+   const remoteVideoTracks = useTracks([Track.Source.Camera, Track.Source.Camera]).filter(
      (t) => t.participant.identity !== localParticipant?.identity,
    );
 
@@ -142,19 +142,7 @@ export function VideoRoomScreen({ payload, onLeave }: Props) {
      return () => clearInterval(id);
    }, [connected, maxSeconds, room, onLeave, limitHit]);
 
-   const toggleMic = async () => {
-     if (!localParticipant) return;
-     const next = !micOn;
-     await localParticipant.setMicrophoneEnabled(next);
-     setMicOn(next);
-   };
 
-   const toggleCam = async () => {
-     if (!localParticipant) return;
-     const next = !camOn;
-     await localParticipant.setCameraEnabled(next);
-     setCamOn(next);
-   };
 
    // Countdown
    useEffect(() => {

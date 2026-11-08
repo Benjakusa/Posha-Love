@@ -114,6 +114,7 @@ export function EditProfileScreen({ token, onSaved, onCancel }: Props) {
       allowsEditing: true,
       aspect: kind === 'avatar' ? [1, 1] : [16, 9],
       quality: 0.8,
+      base64: true,
     });
     if (res.canceled || !res.assets[0]) return;
     const asset = res.assets[0];
@@ -128,7 +129,13 @@ export function EditProfileScreen({ token, onSaved, onCancel }: Props) {
       if (!presignRes.ok) throw new Error('presign failed');
       const presign = await presignRes.json();
       if (!presign.uploadUrl) throw new Error('R2 not configured');
-      const blob = await (await fetch(asset.uri)).blob();
+      // Use base64 returned directly by the image picker — no file:// URI issues on Android.
+      const b64 = asset.base64;
+      if (!b64) throw new Error('No image data');
+      const byteChars = atob(b64);
+      const bytes = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([bytes], { type: contentType });
       const put = await fetch(presign.uploadUrl, {
         method: 'PUT',
         headers: { 'Content-Type': contentType },

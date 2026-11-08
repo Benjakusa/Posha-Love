@@ -35,7 +35,7 @@ export function ChatScreen({ token, onBack }: Props) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [draft, setDraft] = useState('');
   const socketRef = useRef<Socket | null>(null);
-  const scrollRef = useRef<ScrollView | null>(null);
+  const scrollRef = useRef<any>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTyping = useRef(false);
 

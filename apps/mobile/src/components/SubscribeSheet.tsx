@@ -4,18 +4,19 @@ import { useTheme } from '../theme/ThemeProvider';
 import { Icon } from '../icons';
 import { Input } from './Input';
 import { Button } from './Button';
-import { createSubscription } from '../api';
+import { subscribeToCreator } from '../api';
 
 type Props = {
   visible: boolean;
   token: string;
+  creatorId: string;
   creatorAlias: string;
   priceMinor: number;
   onClose: () => void;
   onSubscribed: (creatorAlias: string) => void;
 };
 
-export function SubscribeSheet({ visible, token, creatorAlias, priceMinor, onClose, onSubscribed }: Props) {
+export function SubscribeSheet({ visible, token, creatorId, creatorAlias, priceMinor, onClose, onSubscribed }: Props) {
   const { theme } = useTheme();
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ export function SubscribeSheet({ visible, token, creatorAlias, priceMinor, onClo
     setLoading(true);
     setError(null);
     try {
-      await createSubscription(token, creatorAlias, 'monthly', priceMinor);
+      await subscribeToCreator(token, creatorId, priceMinor);
       onSubscribed(creatorAlias);
       onClose();
     } catch (e) {

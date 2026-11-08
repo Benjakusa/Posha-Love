@@ -1,267 +1,138 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  ImageBackground,
-  StyleSheet,
-  Modal,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, Text, ScrollView, Pressable, Image, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
-import { TopBar } from '../components/TopBar';
 import { BottomNav, NavRoute } from '../components/BottomNav';
-import { Input } from '../components/Input';
-import { Chip } from '../components/Chip';
-import { Button } from '../components/Button';
-import { ListRow } from '../components/ListRow';
-import { SubscribeSheet } from '../components/SubscribeSheet';
+import { SearchFilter, emptyFilters, type Filters } from '../components/SearchFilter';
 import { Icon } from '../icons';
-import { listMySubscriptions } from '../api';
-import { FEATURED, FEMALE, MALE, TRANS, OTHER, Video } from '../catalog';
+import { API_BASE } from '../api';
 
-type Props = { token: string; onNavigate: (route: NavRoute) => void };
+type Creator = {
+  id: string;
+  userId: string;
+  handle: string;
+  displayName: string;
+  bio: string | null;
+  gender: string | null;
+  ethnicity: string | null;
+  orientation: string | null;
+  ageMin: number | null;
+  ageMax: number | null;
+  avatarUrl: string | null;
+  coverUrl: string | null;
+  subscriptionPriceMinor: number;
+};
 
-type Category = 'All' | 'Free' | 'Paid' | 'Under 200' | 'Female' | 'Male' | 'Trans' | 'Other';
+type Props = {
+  token: string;
+  onNavigate: (route: NavRoute) => void;
+  onOpenCreator: (handle: string) => void;
+};
 
-const FILTERS: Category[] = ['All', 'Free', 'Paid', 'Under 200', 'Female', 'Male', 'Trans', 'Other'];
-
-export function ExploreScreen({ token, onNavigate }: Props) {
+export function ExploreScreen({ token, onNavigate, onOpenCreator }: Props) {
   const { theme } = useTheme();
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<Category>('All');
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [subs, setSubs] = useState<Set<string>>(new Set());
-  const [payTarget, setPayTarget] = useState<Video | null>(null);
+  const insets = useSafeAreaInsets();
+  const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    listMySubscriptions(token)
-      .then((list) => setSubs(new Set(list.filter((s) => s.status === 'active').map((s) => s.creatorAlias))))
-      .catch(() => {});
-  }, [token]);
-
-  const matches = (v: Video) => {
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      if (!v.title.toLowerCase().includes(q) && !v.creator.toLowerCase().includes(q)) return false;
-    }
-    switch (filter) {
-      case 'Free': return v.priceMinor === 0;
-      case 'Paid': return v.priceMinor > 0;
-      case 'Under 200': return v.priceMinor < 20000;
-      default: return true;
-    }
-  };
-
-  const lockedFor = (creator: string) => !subs.has(creator);
-  const openPay = (v: Video) => { if (lockedFor(v.creator)) setPayTarget(v); };
+    const t = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.q) params.set('q', filters.q);
+        if (filters.gender) params.set('gender', filters.gender);
+        if (filters.ethnicity) params.set('ethnicity', filters.ethnicity);
+        if (filters.orientation) params.set('orientation', filters.orientation);
+        if (filters.ageRange) {
+          const [min, max] = filters.ageRange.split('-').map((s) => s.replace('+', ''));
+          if (min) params.set('ageMin', min);
+          if (max) params.set('ageMax', max);
+        }
+        const qs = params.toString();
+        const res = await fetch(`${API_BASE}/catalog/creators${qs ? '?' + qs : ''}`);
+        const data = await res.json();
+        setCreators(data ?? []);
+      } catch {} finally { setLoading(false); }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [filters]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      {/* 1. TopBar title style */}
-      <TopBar title="Explore" onNotifPress={() => {}} />
+      <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: 8 }}>
+        <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900', marginBottom: 12 }}>Explore</Text>
+        <SearchFilter filters={filters} onChange={setFilters} placeholder="Search creators..." />
+      </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-        {/* 2. Search row */}
-        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <Input
-              value={query}
-              onChangeText={setQuery}
-              placeholder="Search creators or videos"
-            />
-          </View>
-
-          <Pressable
-            onPress={() => setFilterOpen(true)}
-            accessibilityLabel="Filters"
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: filter !== 'All' ? theme.colors.accentSoft : pressed ? theme.colors.surfaceAlt : theme.colors.surface,
-              alignItems: 'center',
-              justifyContent: 'center',
-            })}
-          >
-            <Icon.Filter size={20} color={filter !== 'All' ? theme.colors.primary : theme.colors.icon} />
-            {filter !== 'All' ? (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: 4,
-                  right: 8,
-                  minWidth: 16,
-                  height: 16,
-                  borderRadius: 8,
-                  backgroundColor: theme.colors.primary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        {loading ? (
+          <ActivityIndicator color={theme.colors.primary} style={{ padding: 40 }} />
+        ) : creators.length === 0 ? (
+          <Text style={{ color: theme.colors.textMuted, textAlign: 'center', padding: 40 }}>No creators match your filters.</Text>
+        ) : (
+          <View style={{ gap: 12 }}>
+            {creators.map((c) => (
+              <Pressable
+                key={c.id}
+                onPress={() => onOpenCreator(c.handle)}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.85 : 1,
+                  flexDirection: 'row',
+                  gap: 14,
+                  padding: 14,
+                  backgroundColor: theme.colors.surface,
+                  borderRadius: theme.radii.lg,
+                  shadowColor: theme.mode === 'light' ? '#000' : '#FFF',
+                  shadowOffset: { width: 0, height: theme.mode === 'light' ? 1 : 0 },
+                  shadowOpacity: theme.mode === 'light' ? 0.08 : 0.06,
+                  shadowRadius: theme.mode === 'light' ? 4 : 10,
+                  elevation: theme.mode === 'light' ? 2 : 0,
+                })}
               >
-                <Text style={{ color: theme.colors.onPrimary, fontSize: 11, fontWeight: '600' }}>{filter}</Text>
-              </View>
-            ) : null}
-          </Pressable>
-
-          {/* Chip filters */}
-          {filterOpen && (
-            <View
-              style={{
-                position: 'absolute',
-                top: 56,
-                left: 16,
-                right: 16,
-                backgroundColor: theme.colors.surface,
-                borderRadius: theme.radii.lg,
-                padding: 12,
-                gap: 8,
-                zIndex: 10,
-              }}
-            >
-              {FILTERS.map((f) => (
-                <Chip key={f} label={f} selected={filter === f} onPress={() => setFilter(f)} />
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* 3. Category grid */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
-          {FEATURED.map((feature) => {
-            const videos = (Video as Video[]).filter((v) => v.category === feature);
-            return (
-              <View key={feature} style={{ marginBottom: 20 }}>
-                <View style={{ paddingHorizontal: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '700' }}>{feature}</Text>
-                  <Pressable>
-                    <Text style={{ color: theme.colors.primaryText, fontSize: 13, fontWeight: '600' }}>See all</Text>
-                  </Pressable>
+                <View style={{ width: 64, height: 64, borderRadius: 32, overflow: 'hidden', backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                  {c.avatarUrl ? (
+                    <Image source={{ uri: c.avatarUrl }} style={{ width: '100%', height: '100%' }} />
+                  ) : (
+                    <Text style={{ color: theme.colors.onPrimary, fontSize: 22, fontWeight: '900' }}>
+                      {c.displayName.slice(0, 2).toUpperCase()}
+                    </Text>
+                  )}
                 </View>
-
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
-                  {videos.map((v) => {
-                    const locked = !subs.has(v.creator);
-                    return (
-                      <Pressable key={v.id} onPress={() => onNavigate(v)} style={{ width: 160, gap: 6 }}>
-                        <View style={{ width: 160, aspectRatio: 4 / 5, borderRadius: theme.radii.lg, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
-                          <ImageBackground source={{ uri: v.image }} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            {locked ? (
-                              <>
-                <BlurView intensity={90} tint={theme.mode} style={StyleSheet.absoluteFill} />
-                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: theme.colors.scrim, alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon.Lock size={16} color={theme.colors.onMedia} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900' }} numberOfLines={1}>{c.displayName}</Text>
+                    <View style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 }}>
+                      <Text style={{ color: theme.colors.onPrimary, fontSize: 11, fontWeight: '900' }}>
+                        KSh {(c.subscriptionPriceMinor / 100).toFixed(0)}/mo
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>@{c.handle}</Text>
+                  {c.bio ? (
+                    <Text style={{ color: theme.colors.text, fontSize: 13 }} numberOfLines={2}>{c.bio}</Text>
+                  ) : null}
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                    {[c.gender, c.ethnicity, c.orientation].filter(Boolean).map((tag) => (
+                      <View key={tag} style={{ backgroundColor: theme.mode === 'light' ? '#F0F2F5' : theme.colors.surface, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 }}>
+                        <Text style={{ color: theme.colors.text, fontSize: 10, fontWeight: '700', textTransform: 'capitalize' }}>{tag}</Text>
+                      </View>
+                    ))}
+                    {c.ageMin && c.ageMax ? (
+                      <View style={{ backgroundColor: theme.mode === 'light' ? '#F0F2F5' : theme.colors.surface, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 }}>
+                        <Text style={{ color: theme.colors.text, fontSize: 10, fontWeight: '700' }}>{c.ageMin}–{c.ageMax}</Text>
+                      </View>
+                    ) : null}
+                  </View>
                 </View>
-                              </>
-                            ) : null}
-
-                            {v.isFeatured ? (
-                              <View style={{ position: 'absolute', top: 8, left: 8, backgroundColor: theme.colors.scrim, paddingHorizontal: 8, paddingVertical: 3, borderRadius: theme.radii.pill }}>
-                                <Text style={{ color: theme.colors.onMedia, fontSize: 11, fontWeight: '600' }}>Featured</Text>
-                              </View>
-                            ) : null}
-                          </ImageBackground>
-                        </View>
-
-                        <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 15, fontWeight: '600', lineHeight: 20 }}>
-                          {v.title}
-                        </Text>
-                        <Text numberOfLines={1} style={{ color: theme.colors.textMuted, fontSize: 13, lineHeight: 18 }}>
-                          {v.creator}
-                        </Text>
-
-                        <View style={{ alignSelf: 'flex-start', backgroundColor: theme.colors.accentSoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: theme.radii.pill }}>
-                          <Text style={{ color: theme.colors.primaryText, fontSize: 12, fontWeight: '600' }}>
-                            {locked ? v.price : 'Subscribed'}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-            );
-          })}
-        </ScrollView>
-
-        {/* 5. Footer */}
-        <Text style={{ padding: 24, textAlign: 'center', color: theme.colors.textMuted, fontSize: 13 }}>You're all caught up</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       <BottomNav active="explore" onNavigate={onNavigate} />
-    </View>
-  );
-}
-
-function SectionGrid({
-  title,
-  videos,
-  theme,
-  subs,
-  onPress,
-  isFeatured = false,
-}: {
-  title: string;
-  videos: Video[];
-  theme: ReturnType<typeof useTheme>['theme'];
-  subs: Set<string>;
-  onPress: (v: Video) => void;
-  isFeatured?: boolean;
-}) {
-  if (videos.length === 0) return null;
-
-  const width = isFeatured ? 240 : 160;
-
-  return (
-    <View style={{ marginBottom: 20 }}>
-      <View style={{ paddingHorizontal: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '700' }}>{title}</Text>
-        <Pressable>
-          <Text style={{ color: theme.colors.primaryText, fontSize: 13, fontWeight: '600' }}>See all</Text>
-        </Pressable>
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
-        {videos.map((v) => {
-          const locked = !subs.has(v.creator);
-          return (
-            <Pressable key={v.id} onPress={() => onPress(v)} style={{ width, gap: 6 }}>
-              <View style={{ width, aspectRatio: 4 / 5, borderRadius: theme.radii.lg, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
-                <ImageBackground source={{ uri: v.image }} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                  {locked ? (
-                    <>
-          <BlurView intensity={90} tint={theme.mode} style={StyleSheet.absoluteFill} />
-          <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: theme.colors.scrim, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon.Lock size={16} color={theme.colors.onMedia} />
-          </View>
-                    </>
-                  ) : null}
-
-                  {isFeatured ? (
-                    <View style={{ position: 'absolute', top: 8, left: 8, backgroundColor: theme.colors.scrim, paddingHorizontal: 8, paddingVertical: 3, borderRadius: theme.radii.pill }}>
-                      <Text style={{ color: theme.colors.onMedia, fontSize: 11, fontWeight: '600' }}>Featured</Text>
-                    </View>
-                  ) : null}
-                </ImageBackground>
-              </View>
-
-              <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 15, fontWeight: '600', lineHeight: 20 }}>
-                {v.title}
-              </Text>
-              <Text numberOfLines={1} style={{ color: theme.colors.textMuted, fontSize: 13, lineHeight: 18 }}>
-                {v.creator}
-              </Text>
-
-              <View style={{ alignSelf: 'flex-start', backgroundColor: theme.colors.accentSoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: theme.radii.pill }}>
-                <Text style={{ color: theme.colors.primaryText, fontSize: 12, fontWeight: '600' }}>
-                  {locked ? v.price : 'Subscribed'}
-                </Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
     </View>
   );
 }

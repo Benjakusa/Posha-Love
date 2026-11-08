@@ -1,4 +1,5 @@
 import React from 'react';
+import Svg, { Circle } from 'react-native-svg';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 
@@ -99,7 +100,7 @@ export function LiveRing({ uri, name, size = 56, isLive = true, isScheduled = fa
             LIVE
           </Text>
         </View>
-      ) : null>
+      ) : null}
     </View>
   );
 }

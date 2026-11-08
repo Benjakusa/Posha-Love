@@ -286,6 +286,9 @@ importers:
       expo-dev-client:
         specifier: ~58.0.18
         version: 58.0.18(bedd1fa7a987c15dd9b47edd8f1880c9)
+      expo-file-system:
+        specifier: ^58.0.13
+        version: 58.0.13(bedd1fa7a987c15dd9b47edd8f1880c9)
       expo-image-manipulator:
         specifier: ~58.0.16
         version: 58.0.16(66a7aeaae087dd91296ac017324a125b)

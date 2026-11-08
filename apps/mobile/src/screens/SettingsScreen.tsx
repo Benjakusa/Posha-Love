@@ -9,33 +9,77 @@ type Props = {
   mode: string;
   onToggleTheme: () => void;
   onSignOut: () => void;
+  onEditProfile?: () => void;
+  onNotifications?: () => void;
+  onPrivacy?: () => void;
+  onTerms?: () => void;
+  onReport?: () => void;
+  onHelp?: () => void;
 };
 
-export function SettingsScreen({ onBack, mode, onToggleTheme, onSignOut }: Props) {
+export function SettingsScreen({
+  onBack, mode, onToggleTheme, onSignOut,
+  onEditProfile, onNotifications, onPrivacy, onTerms, onReport, onHelp,
+}: Props) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const sectionTitle = (t: string) => (
+  const SectionHeader = ({ children }: { children: string }) => (
     <Text style={{
-      color: theme.colors.text, fontSize: 13, fontWeight: '900',
-      letterSpacing: 1, textTransform: 'uppercase',
-      opacity: 0.6, marginTop: 20, marginBottom: 8,
-    }}>{t}</Text>
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: '900',
+      letterSpacing: 1.2,
+      textTransform: 'uppercase',
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 8,
+    }}>
+      {children}
+    </Text>
   );
 
-  const row = (label: string, onPress?: () => void, right?: React.ReactNode) => (
+  const Row = ({
+    icon, label, onPress, right, danger,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    onPress?: () => void;
+    right?: React.ReactNode;
+    danger?: boolean;
+  }) => (
     <Pressable
       onPress={onPress}
-      style={{
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 14,
-        borderWidth: 2, borderColor: theme.colors.border,
-        borderRadius: theme.radii.md, marginBottom: 8,
-      }}
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 20,
+        gap: 16,
+        backgroundColor: pressed ? (theme.mode === 'light' ? '#F5F6F8' : theme.colors.surface) : 'transparent',
+      })}
     >
-      <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>{label}</Text>
-      {right ?? <Icon.Next size={16} color={theme.colors.text} />}
+      <View style={[
+        { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.mode === 'light' ? '#FFFFFF' : theme.colors.surface, alignItems: 'center', justifyContent: 'center' },
+        {
+          shadowColor: theme.mode === 'light' ? '#000000' : '#FFFFFF',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: theme.mode === 'light' ? 0.06 : 0.10,
+          shadowRadius: 6,
+          elevation: theme.mode === 'light' ? 2 : 0,
+        },
+      ]}>
+        {icon}
+      </View>
+      <Text style={{ flex: 1, color: danger ? theme.colors.danger : theme.colors.text, fontSize: 15, fontWeight: '500' }}>
+        {label}
+      </Text>
+      {right ?? <Icon.Next size={16} color={theme.colors.textMuted} />}
     </Pressable>
+  );
+
+  const Divider = () => (
+    <View style={{ height: 1, backgroundColor: theme.mode === 'light' ? '#E5E7EB' : theme.colors.border, marginLeft: 64, opacity: 0.5 }} />
   );
 
   return (
@@ -44,55 +88,62 @@ export function SettingsScreen({ onBack, mode, onToggleTheme, onSignOut }: Props
       <View style={{
         paddingTop: insets.top + 12, paddingBottom: 12, paddingHorizontal: 16,
         flexDirection: 'row', alignItems: 'center', gap: 12,
-        borderBottomWidth: 2, borderBottomColor: theme.colors.border,
+        borderBottomWidth: 1, borderBottomColor: theme.mode === 'light' ? '#E5E7EB' : theme.colors.border,
       }}>
         <Pressable onPress={onBack} accessibilityLabel="Back">
-          <Icon.Back size={26} color={theme.colors.text} />
+          <Icon.Back size={24} color={theme.colors.text} />
         </Pressable>
-        <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '800' }}>Settings</Text>
+        <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>Settings</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {sectionTitle('Appearance')}
-        <View style={{
-          flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-          paddingHorizontal: 16, paddingVertical: 14,
-          borderWidth: 2, borderColor: theme.colors.border,
-          borderRadius: theme.radii.md,
-        }}>
-          <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>Dark mode</Text>
-          <Switch
-            value={mode === 'dark'}
-            onValueChange={onToggleTheme}
-            trackColor={{ true: theme.colors.primary, false: theme.colors.border }}
-            thumbColor="#FFFFFF"
-          />
-        </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        {/* Account */}
+        <SectionHeader>Account</SectionHeader>
+        <Row icon={<Icon.User size={22} color={theme.colors.primary} />} label="Edit profile" onPress={onEditProfile} />
+        <Divider />
+        <Row icon={<Icon.Bell size={22} color={theme.colors.primary} />} label="Notifications" onPress={onNotifications} />
 
-        {sectionTitle('Safety')}
-        {row('Safety & rules')}
-        {row('Report a problem')}
-        {row('Blocked accounts')}
+        {/* Preferences */}
+        <SectionHeader>Preferences</SectionHeader>
+        <Row
+          icon={mode === 'dark' ? <Icon.Moon size={22} color={theme.colors.primary} /> : <Icon.Sun size={22} color={theme.colors.primary} />}
+          label={mode === 'dark' ? 'Dark mode' : 'Light mode'}
+          right={
+            <Switch
+              value={mode === 'dark'}
+              onValueChange={onToggleTheme}
+              trackColor={{ true: theme.colors.primary, false: theme.colors.border }}
+              thumbColor="#FFFFFF"
+            />
+          }
+        />
 
-        {sectionTitle('Privacy')}
-        {row('Privacy policy')}
-        {row('Terms of service')}
-        {row('Data & downloads')}
+        {/* Safety & privacy */}
+        <SectionHeader>Safety & privacy</SectionHeader>
+        <Row icon={<Icon.Lock size={22} color={theme.colors.primary} />} label="Privacy" onPress={onPrivacy} />
+        <Divider />
+        <Row icon={<Icon.Check size={22} color={theme.colors.primary} />} label="Terms of service" onPress={onTerms} />
+        <Divider />
+        <Row icon={<Icon.Bell size={22} color={theme.colors.primary} />} label="Report a problem" onPress={onReport} />
 
-        {sectionTitle('About')}
-        {row('POSHA version', undefined, <Text style={{ color: theme.colors.text, fontSize: 13, opacity: 0.6 }}>1.0.0</Text>)}
+        {/* Support */}
+        <SectionHeader>Support</SectionHeader>
+        <Row icon={<Icon.Chat size={22} color={theme.colors.primary} />} label="Help center" onPress={onHelp} />
+        <Divider />
+        <Row
+          icon={<Icon.Explore size={22} color={theme.colors.primary} />}
+          label="Version"
+          right={<Text style={{ color: theme.colors.textMuted, fontSize: 13 }}>1.0.0</Text>}
+        />
 
-        <View style={{ marginTop: 24 }}>
-          <Pressable
-            onPress={onSignOut}
-            style={{
-              borderWidth: 2, borderColor: theme.colors.danger,
-              borderRadius: 999, paddingVertical: 14, alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: theme.colors.danger, fontWeight: '900', fontSize: 14 }}>Sign out</Text>
-          </Pressable>
-        </View>
+        {/* Sign out */}
+        <SectionHeader>Account</SectionHeader>
+        <Row
+          icon={<Icon.Close size={22} color={theme.colors.danger} />}
+          label="Sign out"
+          onPress={onSignOut}
+          danger
+        />
       </ScrollView>
     </View>
   );

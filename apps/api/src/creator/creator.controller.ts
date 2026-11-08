@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, UseGuards, Request, HttpCode } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards, Request, HttpCode, Param } from '@nestjs/common';
 import { GuestAuthGuard } from '../connect/guest-auth.guard';
 import { RolesGuard } from '../connect/roles.guard';
 import { Roles } from '../connect/roles.decorator';
@@ -23,10 +23,7 @@ export class CreatorController {
   @Post('presign-image')
   @HttpCode(200)
   @Roles('member', 'creator', 'admin')
-  async presignImage(
-    @Request() req: any,
-    @Body() body: { kind: 'avatar' | 'cover'; contentType: string },
-  ) {
+  async presignImage(@Request() req: any, @Body() body: { kind: 'avatar' | 'cover'; contentType: string }) {
     if (!['avatar', 'cover'].includes(body.kind)) {
       return { error: 'INVALID_IMAGE_KIND' };
     }
@@ -48,7 +45,24 @@ export class CreatorController {
   @Get('me')
   @Roles('member', 'creator', 'admin')
   async me(@Request() req: any) {
-    console.log('[ME] userId=', req.user.userId, 'role=', req.user.role);
     return this.creator.me(req.user.userId);
+  }
+
+  @Get('stats')
+  @Roles('creator', 'admin')
+  async stats(@Request() req: any) {
+    return this.creator.dashboardStats(req.user.userId);
+  }
+
+  @Post('posts')
+  @Roles('creator', 'admin')
+  async createPost(@Request() req: any, @Body() body: { caption: string; mediaKey: string; mediaType: 'image' | 'video' }) {
+    return this.creator.createPost(req.user.userId, body);
+  }
+
+  @Post('lives')
+  @Roles('creator', 'admin')
+  async scheduleLive(@Request() req: any, @Body() body: { title: string; startsAt: string }) {
+    return this.creator.scheduleLive(req.user.userId, body);
   }
 }

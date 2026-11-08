@@ -1,10 +1,11 @@
 import React from 'react';
 import { Text, type TextProps } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
+import { palette } from '@posha/config';
 
 type IconProps = { size?: number; color?: string } & Omit<TextProps, 'style'>;
 
-function Glyph({ children, size = 22, color = '#FF0000', ...rest }: IconProps & { children: string }) {
+function Glyph({ children, size = 22, color = '#0066FF', ...rest }: IconProps & { children: string }) {
   return (
     <Text
       style={{ fontSize: size, color, lineHeight: size + 2, textAlign: 'center' }}
@@ -16,37 +17,31 @@ function Glyph({ children, size = 22, color = '#FF0000', ...rest }: IconProps & 
   );
 }
 
-// Closed padlock — keyhole is a real hole (transparent), not a black dot.
-function Padlock({ size = 22, color = '#FF0000' }: IconProps) {
+function Padlock({ size = 22, color = '#0066FF' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="5" y="11" width="14" height="10" rx="2" fill={color} />
-      <Path
-        d="M8 11V7a4 4 0 118 0v4"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* keyhole cut-out */}
-      <Circle cx="12" cy="16" r="1.6" fill="none" stroke="transparent" />
-      <Circle cx="12" cy="16" r="1.6" fillOpacity={0} />
+      <Path d="M8 11V7a4 4 0 118 0v4" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
 
-// Open padlock — shackle tilted open to the right.
-function Unlock({ size = 22, color = '#FF0000' }: IconProps) {
+function Unlock({ size = 22, color = '#0066FF' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="5" y="11" width="14" height="10" rx="2" fill={color} />
-      <Path
-        d="M8 11V7a4 4 0 017-2.65"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <Path d="M8 11V7a4 4 0 017-2.65" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+function TrashIcon({ size = 22, color = '#0066FF' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M3 6h18" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <Path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M10 11v6M14 11v6" stroke={color} strokeWidth="2" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -60,6 +55,7 @@ export const Icon = {
   Video:    (p: IconProps) => <Glyph {...p}>▷</Glyph>,
   Lock:     (p: IconProps) => <Padlock {...p} />,
   Unlock:   (p: IconProps) => <Unlock {...p} />,
+  Trash:    (p: IconProps) => <TrashIcon {...p} />,
   Heart:    (p: IconProps) => <Glyph {...p}>♥</Glyph>,
   Play:     (p: IconProps) => <Glyph {...p}>▶</Glyph>,
   Calendar: (p: IconProps) => <Glyph {...p}>▤</Glyph>,

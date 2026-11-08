@@ -98,6 +98,9 @@ export class CreatorService {
     coverKey?: string | null;
     subscriptionPriceMinor?: number;
     category?: string | null;
+    categories?: string[];
+    languages?: string[];
+    country?: string | null;
     instagram?: string | null;
     tiktok?: string | null;
     youtube?: string | null;
@@ -148,6 +151,9 @@ export class CreatorService {
         ...(body.avatarKey !== undefined ? { avatarKey: body.avatarKey } : {}),
         ...(body.coverKey !== undefined ? { coverKey: body.coverKey } : {}),
         ...(body.category !== undefined ? { category: body.category } : {}),
+        ...(body.categories !== undefined ? { categories: body.categories } : {}),
+        ...(body.languages !== undefined ? { languages: body.languages } : {}),
+        ...(body.country !== undefined ? { country: body.country } : {}),
         ...(body.instagram !== undefined ? { instagram: body.instagram } : {}),
         ...(body.tiktok !== undefined ? { tiktok: body.tiktok } : {}),
         ...(body.youtube !== undefined ? { youtube: body.youtube } : {}),
@@ -170,6 +176,9 @@ export class CreatorService {
         avatarUrl: updated.avatarKey ? await this.r2.getSignedImageUrl(updated.avatarKey) : null,
         coverUrl: updated.coverKey ? await this.r2.getSignedImageUrl(updated.coverKey) : null,
         category: updated.category,
+        categories: updated.categories,
+        languages: updated.languages,
+        country: updated.country,
         instagram: updated.instagram,
         tiktok: updated.tiktok,
         youtube: updated.youtube,
@@ -229,6 +238,9 @@ export class CreatorService {
         avatarUrl: creator.avatarKey ? await this.r2.getSignedImageUrl(creator.avatarKey) : null,
         coverUrl: creator.coverKey ? await this.r2.getSignedImageUrl(creator.coverKey) : null,
         category: creator.category,
+        categories: creator.categories,
+        languages: creator.languages,
+        country: creator.country,
         instagram: creator.instagram,
         tiktok: creator.tiktok,
         youtube: creator.youtube,
@@ -248,4 +260,61 @@ export class CreatorService {
       },
     };
   }
+
+  async dashboardStats(userId: string) {
+    const creator = await this.prisma.creator.findUnique({ where: { userId } });
+    if (!creator) return { subscribers: 0, earningsMinor: 0, videos: 0, scheduledLives: 0, recentSubscribers: [], withdrawals: [] };
+
+    const [subs, posts, lives] = await Promise.all([
+      this.prisma.subscription.count({ where: { creatorId: creator.userId, status: 'active' } }),
+      this.prisma.post.count({ where: { creatorId: creator.userId } }),
+      this.prisma.scheduledLive.count({ where: { creatorId: creator.userId, status: 'scheduled' } }),
+    ]);
+
+    // Earnings: sum of succeeded payments for this creator
+    const payments = await this.prisma.payment.findMany({
+      where: { creatorId: creator.userId, status: 'succeeded' },
+    });
+    const earningsMinor = payments.reduce((sum, p) => sum + p.amountMinor, 0);
+
+    return {
+      subscribers: subs,
+      earningsMinor,
+      videos: posts,
+      scheduledLives: lives,
+      recentSubscribers: [],
+      withdrawals: [],
+    };
+  }
+
+  async createPost(userId: string, body: { caption: string; mediaKey: string; mediaType: 'image' | 'video' }) {
+    const creator = await this.prisma.creator.findUnique({ where: { userId } });
+    if (!creator) throw new BadRequestException({ code: 'NOT_A_CREATOR' });
+    if (!body.caption?.trim()) throw new BadRequestException({ code: 'CAPTION_REQUIRED' });
+    if (!body.mediaKey) throw new BadRequestException({ code: 'MEDIA_REQUIRED' });
+
+    const post = await this.prisma.post.create({
+      data: {
+        creatorId: creator.userId,
+        caption: body.caption.trim(),
+        mediaKey: body.mediaKey,
+        mediaType: body.mediaType,
+      },
+    });
+    return { id: post.id, caption: post.caption, mediaKey: post.mediaKey, mediaType: post.mediaType, createdAt: post.createdAt.toISOString() };
+  }
+
+  async scheduleLive(userId: string, body: { title: string; startsAt: string }) {
+    const creator = await this.prisma.creator.findUnique({ where: { userId } });
+    if (!creator) throw new BadRequestException({ code: 'NOT_A_CREATOR' });
+    if (!body.title?.trim()) throw new BadRequestException({ code: 'TITLE_REQUIRED' });
+    const startsAt = new Date(body.startsAt);
+    if (isNaN(startsAt.getTime())) throw new BadRequestException({ code: 'INVALID_DATE' });
+
+    const live = await this.prisma.scheduledLive.create({
+      data: { creatorId: creator.userId, title: body.title.trim(), startsAt, status: 'scheduled' },
+    });
+    return { id: live.id, title: live.title, startsAt: live.startsAt.toISOString(), status: live.status };
+  }
+
 }
