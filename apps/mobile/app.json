@@ -13,7 +13,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "POSHA uses your camera for video chat with strangers. You are always in control — video only starts after you tap to enable it.",
         "NSMicrophoneUsageDescription": "POSHA uses your microphone for video chat with strangers. You can mute anytime."
-      }
+      },
+      "bitcode": false
     },
     "android": {
       "package": "cloud.posha.app",
@@ -31,7 +32,9 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.BLUETOOTH",
-        "android.permission.BLUETOOTH_CONNECT"
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.WAKE_LOCK"
       ]
     },
     "web": {
@@ -40,6 +43,11 @@
     "plugins": [
       "@livekit/react-native-expo-plugin",
       "@config-plugins/react-native-webrtc"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8e2ae9cc-5f57-4c35-b6be-423c5fb5b914"
+      }
+    }
   }
 }
