@@ -234,6 +234,7 @@ function Root() {
       screen = session ? (
         <HomeScreen
           token={session.token}
+          role={session.role}
           onChat={() => go('chat')}
           onVideo={() => go('video')}
           onNavigate={navigate}
