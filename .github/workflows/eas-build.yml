@@ -26,4 +26,6 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: pnpm --filter @posha/mobile exec eas build -p android --profile preview --non-interactive
